@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const kpiDir = path.resolve(__dirname, '../../../../data/kpi');
+
+type Snapshot = {
+  date: string;
+  page: string;
+  performance: number;
+  accessibility: number;
+  bestPractices: number;
+  seo: number;
+};
+
+let snapshots: Snapshot[] = [];
+try {
+  const files = fs.readdirSync(kpiDir).filter(f => f.endsWith('.json'));
+  for (const f of files) {
+    const d = JSON.parse(fs.readFileSync(path.join(kpiDir, f), 'utf-8'));
+    const date = f.match(/^(\d{4}-\d{2}-\d{2})/)?.[1] ?? '?';
+    const page = /-ja\.json$/.test(f) ? 'JA home' : /home|baseline/.test(f) ? 'EN home' : f;
+    snapshots.push({
+      date,
+      page,
+      performance: Math.round((d?.categories?.performance?.score ?? 0) * 100),
+      accessibility: Math.round((d?.categories?.accessibility?.score ?? 0) * 100),
+      bestPractices: Math.round((d?.categories?.['best-practices']?.score ?? 0) * 100),
+      seo: Math.round((d?.categories?.seo?.score ?? 0) * 100),
+    });
+  }
+} catch {}
+
+snapshots.sort((a, b) => (a.date + a.page).localeCompare(b.date + b.page));
+const enLatest = [...snapshots].reverse().find(s => s.page === 'EN home');
+---
+<Base
+  title="KPI — loop-lab"
+  description="Lighthouse score time series, auto-synced from data/kpi/*.json at build time."
+>
+  <p class="kicker">lab / kpi</p>
+  <h1>KPI</h1>
+
+  <p>
+    Lighthouse snapshots, oldest first. A daily cron
+    (<code>.github/workflows/lighthouse.yml</code>) writes a new row
+    every day at 04:30 JST.
+  </p>
+
+  {enLatest && (
+    <div class="hero">
+      <p class="hero-label">latest EN home</p>
+      <div class="hero-grid">
+        <span><strong>{enLatest.performance}</strong> performance</span>
+        <span><strong>{enLatest.accessibility}</strong> accessibility</span>
+        <span><strong>{enLatest.bestPractices}</strong> best-practices</span>
+        <span><strong>{enLatest.seo}</strong> seo</span>
+      </div>
+    </div>
+  )}
+
+  <table class="kpi">
+    <thead>
+      <tr>
+        <th>date</th>
+        <th>page</th>
+        <th>perf</th>
+        <th>a11y</th>
+        <th>best</th>
+        <th>seo</th>
+        <th>sum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {snapshots.map(s => (
+        <tr>
+          <td>{s.date}</td>
+          <td><small>{s.page}</small></td>
+          <td>{s.performance}</td>
+          <td>{s.accessibility}</td>
+          <td>{s.bestPractices}</td>
+          <td>{s.seo}</td>
+          <td><strong>{s.performance + s.accessibility + s.bestPractices + s.seo}</strong></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <p class="footnote">
+    {snapshots.length} snapshot{snapshots.length === 1 ? '' : 's'}. Raw JSON at
+    <a href="https://github.com/ryo-solo/loop-lab/tree/main/data/kpi">data/kpi/</a>.
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .hero { padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin: 1rem 0; }
+    .hero-label { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; font-family: var(--mono); font-size: 0.85rem; }
+    .hero-grid strong { font-size: 1.4rem; color: var(--accent); display: inline-block; min-width: 2.2em; }
+    table.kpi { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.82rem; margin: 1rem 0; }
+    .kpi th, .kpi td { text-align: left; padding: 0.4em 0.4em; border-bottom: 1px solid var(--border); }
+    .kpi th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi small { color: var(--muted); font-size: 0.78rem; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
