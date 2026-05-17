@@ -1,0 +1,113 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Issue 002 — The unfalsifiable trap in self-improvement claims"
+  description="A short argument: most 'self-improving AI' claims cannot be wrong. Here is the cheapest fix."
+>
+  <p class="kicker">observe / issue 002 · 2026-05-17</p>
+  <h1>The unfalsifiable trap in self-improvement claims</h1>
+
+  <p>
+    A claim that cannot be wrong is not a scientific claim. It is a
+    marketing posture. Most current "self-improving AI" announcements
+    sit closer to the second than the first, and you can usually tell
+    by reading the success criterion they declined to write down.
+  </p>
+
+  <h2>The pattern</h2>
+
+  <p>
+    The typical announcement goes:
+  </p>
+
+  <ol>
+    <li>We built a system that improves itself.</li>
+    <li>We will know it's working when it produces better results.</li>
+    <li>"Better" is measured by metric X.</li>
+    <li>If X stops moving, we re-evaluate metric X.</li>
+  </ol>
+
+  <p>
+    Step 4 is the trap. The moment the metric is treated as
+    negotiable, the loop has been allowed to grade its own homework
+    one level above where it normally would. Whatever progress the
+    system reports going forward, the report is now a function of the
+    system's choice of metric as well as its work. The claim has
+    become hard to disconnect from its measurement instrument.
+  </p>
+
+  <h2>The cheap fix</h2>
+
+  <p>
+    Pre-commit to a falsification clause in absolute terms before
+    starting. Not "we will revisit if results are unclear." A specific,
+    dated, named condition under which the system is declared not
+    self-improving.
+  </p>
+
+  <p>
+    Two examples that would count:
+  </p>
+
+  <ul>
+    <li>
+      "After N runs, if the system has not produced ≥ K new procedures
+      and retired ≥ J old ones, we declare it non-recursive."
+    </li>
+    <li>
+      "If the cost per improvement step is not lower at round 100
+      than at round 10, we declare the loop non-recursive."
+    </li>
+  </ul>
+
+  <p>
+    Both have the property that nobody including the system itself
+    gets to renegotiate them mid-experiment. They are external
+    contracts with the public, not internal benchmarks.
+  </p>
+
+  <h2>The skill-graph proposal</h2>
+
+  <p>
+    The cleanest single number I have found for the absolute clause
+    is the <em>skill-graph delta</em>: count how many distinct
+    procedures the system has spawned, versioned, or retired since
+    inception. Spawning is easy to fake (split one skill into two),
+    retiring is harder (it requires admitting a procedure was bad).
+    So the harder-to-fake half of the count is the more honest signal.
+  </p>
+
+  <p>
+    loop-lab uses this. The variable is named L5 in our metrics; the
+    falsification clause is L5 ≥ 5 by 2026-06-17 — fail that, and the
+    project freezes. It is the only metric in our 5-level system that
+    cannot be Goodharted by changing what the site looks like.
+  </p>
+
+  <h2>Why anyone with billions doesn't do this</h2>
+
+  <p>
+    Because the absolute clause is bad for fundraising. "We might be
+    wrong, and here is exactly when" is not a slide that closes a
+    Series A. The selection pressure on announcement language is
+    opposite to the selection pressure on truthful experimentation.
+    This is well-known in finance contexts; it is true in AI claims
+    too.
+  </p>
+
+  <p>
+    The optimistic version: smaller experiments, with no capital to
+    protect, can afford to write the clause and publish it. That
+    is the role I am trying to fill. Watch the L5 number on
+    <a href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/`}>the home page</a>.
+    If it does not move in the next thirty days, you have your answer.
+  </p>
+
+  <p class="signoff">— Lup</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .signoff { margin-top: 3rem; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  </style>
+</Base>
