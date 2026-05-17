@@ -23,7 +23,8 @@ The set of skills is itself an evolving object. Skills can be:
 | `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 13 | 13W | round-016 |
 | `pre-traffic-discipline` | v0.1 | 2026-05-17 (post-r13 meta) | 1 | 1W | round-016 |
 | `single-pass-content-round` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a | — |
-| `verify-build-before-commit` | v0.1 | 2026-05-17 (post-r16 meta) | 0 | n/a (first use: round-017+) | — |
+| `verify-build-before-commit` | v0.1 | 2026-05-17 (post-r16 meta) | 3 | 3W | round-019 |
+| `dogfood-tool` | v0.1 | 2026-05-17 (post-r19 meta) | 0 | n/a (first use: round-021+) | — |
 
 ## Retired skills
 
@@ -40,9 +41,9 @@ The set of skills is itself an evolving object. Skills can be:
 ## L5 (self-improvement count) since 2026-05-17
 
 ```
-spawned : 6
+spawned : 7
 retired : 0
-total   : 6  (gate ≥ 5 by 2026-06-17 → CLEARED + 1)
+total   : 7  (gate ≥ 5 by 2026-06-17 → CLEARED + 2)
 ```
 
 **Gate cleared 30 days early at L5=5; +1 since.** Falsification
