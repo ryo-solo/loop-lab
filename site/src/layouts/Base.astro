@@ -37,6 +37,7 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={lang === 'ja' ? 'ja_JP' : 'en_US'} />
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
+    <link rel="alternate" type="application/rss+xml" title="loop-lab / observe" href={absoluteUrl(Astro.site, `${base}/rss.xml`)} />
     <script is:inline>
       (function () {
         try {
