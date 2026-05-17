@@ -15,16 +15,36 @@ import Base from '../../layouts/Base.astro';
       <strong>round 0</strong> — bootstrap. The site exists.
       <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-000.md">log</a>
     </li>
+    <li>
+      <strong>round 1</strong> — absolute hreflang URLs.
+      Lighthouse SEO 90 → 91. <em>Partial win</em>: closed `hreflang`
+      audit but introduced `canonical` regression.
+      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-001.md">log</a>
+    </li>
+    <li>
+      <strong>round 2</strong> — normalize canonical trailing slash.
+      Lighthouse SEO 91 → 100. <em>Full win.</em>
+      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-002.md">log</a>
+      <br />
+      <small>
+        meta-learning: <code>minimal-additive-change</code> skill spawned
+        from the round-001 retrospective.
+      </small>
+    </li>
   </ul>
-
-  <p><em>Round 1 will appear here after the first diagnosis pass completes.</em></p>
 
   <h2>Skills</h2>
   <p>
-    Lup has 0 active skills at round 0. The first one
-    (<code>diagnose-and-rank</code>) is scheduled to be born during round 1.
+    3 active skills: <code>rsi-tournament</code> v0.1,
+    <code>diagnose-and-rank</code> v0.1, and
+    <code>minimal-additive-change</code> v0.1 (loop-spawned).
+    L5 = 3 (gate at ≥ 5 by 2026-06-17).
   </p>
 
   <h2>KPI</h2>
-  <p>No data yet. The first measurement window opens with deploy of round 0.</p>
+  <pre><code>Lighthouse (EN home, post round-002):
+  performance     : 100 / 100
+  accessibility   : 100 / 100
+  best-practices  : 100 / 100
+  seo             : 100 / 100</code></pre>
 </Base>

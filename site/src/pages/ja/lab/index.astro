@@ -15,17 +15,36 @@ import Base from '../../../layouts/Base.astro';
       <strong>round 0</strong> — bootstrap。サイトが存在するようになった。
       <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-000.md">log</a>
     </li>
+    <li>
+      <strong>round 1</strong> — hreflang URL を絶対パスに。
+      Lighthouse SEO 90 → 91。<em>部分勝利</em>：hreflang audit は通過したが、
+      代わりに canonical の regression を仕込んでしまった。
+      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-001.md">log</a>
+    </li>
+    <li>
+      <strong>round 2</strong> — canonical URL の trailing slash 正規化。
+      Lighthouse SEO 91 → 100。<em>完全勝利。</em>
+      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-002.md">log</a>
+      <br />
+      <small>
+        メタ学習：round-001 の振り返りから
+        <code>minimal-additive-change</code> skill を loop 自身が spawn。
+      </small>
+    </li>
   </ul>
-
-  <p><em>Round 1 は最初の診断 pass が完了したらここに掲載されます。</em></p>
 
   <h2>Skills</h2>
   <p>
-    Round 0 時点で active skill は 2 種：
-    <code>rsi-tournament</code>（round の主 loop）と
-    <code>diagnose-and-rank</code>（弱点抽出）。Round 1 で初回起動。
+    現在 active な skill は 3 種：<code>rsi-tournament</code> v0.1、
+    <code>diagnose-and-rank</code> v0.1、
+    <code>minimal-additive-change</code> v0.1（loop 自身が生成）。
+    L5 = 3（2026-06-17 までに ≥ 5 が必要）。
   </p>
 
   <h2>KPI</h2>
-  <p>まだデータなし。Round 0 deploy で最初の計測 window が開きました。</p>
+  <pre><code>Lighthouse (EN home, round-002 後):
+  performance     : 100 / 100
+  accessibility   : 100 / 100
+  best-practices  : 100 / 100
+  seo             : 100 / 100</code></pre>
 </Base>

@@ -16,19 +16,28 @@ The set of skills is itself an evolving object. Skills can be:
 
 ## Active skills
 
-| Skill | Version | Spawned | Win rate | Last used |
-|---|---|---|---|---|
-| `rsi-tournament` | v0.1 | 2026-05-17 | n/a (bootstrap) | - |
-| `diagnose-and-rank` | v0.1 | 2026-05-17 | n/a (bootstrap) | - |
+| Skill | Version | Spawned | Invocations | Wins | Last used |
+|---|---|---|---|---|---|
+| `rsi-tournament` | v0.1 | 2026-05-17 | 2 | 1 (partial r1) + 1 (full r2) | round-002 |
+| `diagnose-and-rank` | v0.1 | 2026-05-17 | 2 | 2 | round-002 |
+| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 0 | n/a | (first use: round-003) |
 
 ## Retired skills
 
 (none yet)
 
+## Spawn / retire log
+
+- 2026-05-17 (bootstrap): spawned `rsi-tournament` v0.1, `diagnose-and-rank` v0.1
+- 2026-05-17 (round-002 meta-learning): spawned `minimal-additive-change` v0.1
+
 ## L5 (self-improvement count) since 2026-05-17
 
 ```
-spawned : 2
+spawned : 3
 retired : 0
-total   : 2  (gate ≥ 5 by 2026-06-17)
+total   : 3  (gate ≥ 5 by 2026-06-17)
 ```
+
+Round-003 will be the first round under all three skills, and the
+first chance for `minimal-additive-change` to be exercised.
