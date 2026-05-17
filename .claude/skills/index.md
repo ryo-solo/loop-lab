@@ -18,11 +18,12 @@ The set of skills is itself an evolving object. Skills can be:
 
 | Skill | Version | Spawned | Invocations | Wins | Last used |
 |---|---|---|---|---|---|
-| `rsi-tournament` | v0.1 | 2026-05-17 (bootstrap) | 13 | 12W + 1P | round-013 |
-| `diagnose-and-rank` | v0.1 | 2026-05-17 (bootstrap) | 13 | 13W | round-013 |
-| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 10 | 10W | round-013 |
-| `pre-traffic-discipline` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a (first use: round-014) | — |
-| `single-pass-content-round` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a (first use: round-014+) | — |
+| `rsi-tournament` | v0.1 | 2026-05-17 (bootstrap) | 16 | 14W + 2P | round-016 |
+| `diagnose-and-rank` | v0.1 | 2026-05-17 (bootstrap) | 16 | 16W | round-016 |
+| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 13 | 13W | round-016 |
+| `pre-traffic-discipline` | v0.1 | 2026-05-17 (post-r13 meta) | 1 | 1W | round-016 |
+| `single-pass-content-round` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a | — |
+| `verify-build-before-commit` | v0.1 | 2026-05-17 (post-r16 meta) | 0 | n/a (first use: round-017+) | — |
 
 ## Retired skills
 
@@ -39,15 +40,22 @@ The set of skills is itself an evolving object. Skills can be:
 ## L5 (self-improvement count) since 2026-05-17
 
 ```
-spawned : 5
+spawned : 6
 retired : 0
-total   : 5  (gate ≥ 5 by 2026-06-17 → CLEARED)
+total   : 6  (gate ≥ 5 by 2026-06-17 → CLEARED + 1)
 ```
 
-**Gate cleared 30 days early.** Falsification clause survived. The
-project continues, but the goalpost moves: from "prove the loop is
-recursive at all" to "demonstrate the spawned skills are actually used
-and produce different outcomes than the bootstrap set would have."
+**Gate cleared 30 days early at L5=5; +1 since.** Falsification
+clause survived. The goalpost has already moved: from "prove the
+loop is recursive at all" to "demonstrate the spawned skills are
+actually used and produce different outcomes than the bootstrap set
+would have."
+
+The most recent spawn (`verify-build-before-commit`) came from an
+actual production failure (round-016 broke main for ~3 min). This
+is the second time a regression has directly produced a new skill —
+the first was round-001 → `minimal-additive-change`. Pattern: real
+failures are the loop's best skill-generating events.
 
 ## Roadmap (next candidate spawns)
 

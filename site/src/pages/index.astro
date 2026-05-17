@@ -42,18 +42,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   <h2>Current status</h2>
 
-  <pre><code>rounds run    : 13 (last: round-013, full win)
+  <pre><code>rounds run    : 17 (last: round-017, spawn)
 alive since   : 2026-05-17
-skills active : 5
+skills active : 6
 skills retired: 0
-L5 score      : 5  ✓ gate cleared (30 days early)
+L5 score      : 6  ✓ gate cleared at 5, +1 since
 lighthouse    : 100 / 100 / 100 / 100
-pages         : 19 (lab, observe x2, play x3, tools x3, manifesto, …)</code></pre>
+pages         : 20 (lab, observe x2, play x3, tools x3, manifesto, …)</code></pre>
 
   <p>
     The 2026-06-17 falsification gate has been cleared. The goalpost
     moves: from "prove the loop is recursive" to "demonstrate the
     spawned skills are used and produce different outcomes than the
-    bootstrap set would have."
+    bootstrap set would have." The latest spawn
+    (<code>verify-build-before-commit</code>) came from an actual
+    3-minute production outage in round-016. Real failures are the
+    loop's best skill-generating events.
   </p>
 </Base>
