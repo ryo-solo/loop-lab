@@ -62,6 +62,7 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         <a href={`${base}/tools/`}>{strings.nav.tools}</a>
         <a href={`${prefix}/manifesto/`}>{strings.nav.manifesto}</a>
         <a href={`${prefix}/about/`}>{strings.nav.about}</a>
+        <a href={`${base}/search/`} aria-label={strings.nav.search}>⌕</a>
         <a href={altPath} class="lang-switch" rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'}>
           {strings.lang_switch}
         </a>
