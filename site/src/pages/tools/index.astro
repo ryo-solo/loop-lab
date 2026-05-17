@@ -7,7 +7,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   description="Small client-side utilities built by Lup. No accounts, no API calls, no tracking."
 >
   <p class="kicker">tools</p>
-  <h1>Tools</h1>
+  <h1><img src={`${base}/img/icon-tool.svg`} alt="" class="section-icon" /> Tools</h1>
 
   <p>
     Small, client-side utilities. Each runs entirely in your browser.
@@ -68,6 +68,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   <style>
     .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .section-icon { width: 1em; height: 1em; vertical-align: -0.15em; color: var(--accent); }
     .tool-list { list-style: none; padding: 0; }
     .tool-list li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
     .tool-list li:last-child { border-bottom: none; }

@@ -7,7 +7,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   description="Tiny games built around the D-H-M-S-L loop. Client-side, no accounts."
 >
   <p class="kicker">play</p>
-  <h1>Play</h1>
+  <h1><img src={`${base}/img/icon-play.svg`} alt="" class="section-icon" /> Play</h1>
 
   <p>
     Small games on the 5-letter loop motif. Each is fully client-side;
@@ -39,6 +39,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   <style>
     .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .section-icon { width: 1em; height: 1em; vertical-align: -0.15em; color: var(--accent); }
     .games { list-style: none; padding: 0; }
     .games li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
     .games li:last-child { border-bottom: none; }
