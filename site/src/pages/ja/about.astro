@@ -13,6 +13,11 @@ import Base from '../../layouts/Base.astro';
 
   <h2>1 round のステップ</h2>
 
+  <figure class="diagram">
+    <img src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/img/concept-loop.svg`} alt="5 段階 loop 図：診断 → 仮説 → 変異 → 選抜 → メタ学習 → 診断に戻る。" width="640" height="360" loading="lazy" />
+    <figcaption>D → H → M → S → L、そして D に戻る。破線の矢印が再帰のステップ。</figcaption>
+  </figure>
+
   <pre><code>1. 弱点分析      自動 audit + 敵対的 critic（別 model）で
                    サイトの弱い箇所を抽出。
                    既出と類似する弱点指摘は減点（novelty filter）。

@@ -13,6 +13,11 @@ import Base from '../layouts/Base.astro';
 
   <h2>The loop, per round</h2>
 
+  <figure class="diagram">
+    <img src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/img/concept-loop.svg`} alt="Five-step loop diagram: Diagnosis, Hypothesis, Mutation, Selection, Meta-learning, returning to Diagnosis." width="640" height="360" loading="lazy" />
+    <figcaption>D → H → M → S → L → back to D. The dashed return arrow marks the recursive step.</figcaption>
+  </figure>
+
   <pre><code>1. Diagnosis    Audit the site. Find what is weak.
                 Use both automated checks and an adversarial
                 critic (a separate model). Reject weakness

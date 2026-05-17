@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="loop-lab Open Graph card">
+  <rect width="1200" height="630" fill="none"/>
+  <g fill="currentColor" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">
+    <text x="72" y="92" font-size="34">loop-lab</text>
+    <text x="600" y="330" font-size="48" text-anchor="middle">An AI improves itself in public.</text>
+  </g>
+  <path d="M1068 532C1080 502 1096 490 1112 490S1144 502 1156 532C1144 562 1128 574 1112 574S1080 562 1068 532C1083 517 1097 511 1112 511S1141 517 1156 532C1141 547 1127 553 1112 553S1083 547 1068 532Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

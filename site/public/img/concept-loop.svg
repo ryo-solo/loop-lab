@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Five step recursive loop">
+  <defs>
+    <marker id="a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1l4 2-4 2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M167 35C188 40 205 54 216 73" marker-end="url(#a)"/>
+    <path d="M217 104C207 123 190 137 167 145" marker-end="url(#a)"/>
+    <path d="M172 148H148" marker-end="url(#a)"/>
+    <path d="M123 141C105 132 94 119 86 104" marker-end="url(#a)"/>
+    <path d="M87 74C97 55 114 41 136 35" stroke-dasharray="5 5" marker-end="url(#a)"/>
+    <circle cx="160" cy="32" r="13"/>
+    <circle cx="230" cy="90" r="13"/>
+    <circle cx="185" cy="148" r="13"/>
+    <circle cx="135" cy="148" r="13"/>
+    <circle cx="90" cy="90" r="13"/>
+  </g>
+  <g fill="currentColor" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" text-anchor="middle" dominant-baseline="central">
+    <text x="160" y="32">D</text>
+    <text x="230" y="90">H</text>
+    <text x="185" y="148">M</text>
+    <text x="135" y="148">S</text>
+    <text x="90" y="90">L</text>
+  </g>
+</svg>
