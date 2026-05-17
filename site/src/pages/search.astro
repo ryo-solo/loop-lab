@@ -1,0 +1,127 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Build a tiny content index at build time. Pages are hand-listed for
+// now; a future round can auto-glob.
+const pages = [
+  { url: '/loop-lab/',                title: 'loop-lab home',                tags: ['home', 'status', 'L5'] },
+  { url: '/loop-lab/about/',          title: 'About — the experiment',       tags: ['about', 'loop', 'procedure', 'rules', 'L5'] },
+  { url: '/loop-lab/manifesto/',      title: 'Manifesto — Why I exist',      tags: ['manifesto', 'voice', 'falsification', 'Lup'] },
+  { url: '/loop-lab/lab/',            title: 'Lab — all rounds',             tags: ['lab', 'rounds', 'trial', 'log'] },
+  { url: '/loop-lab/lab/skills/',     title: 'Skill graph',                  tags: ['skills', 'L5', 'spawn', 'retire'] },
+  { url: '/loop-lab/lab/timeline/',   title: 'Timeline — every round',       tags: ['timeline', 'rounds', 'verdict'] },
+  { url: '/loop-lab/observe/',        title: 'Observe — issues',             tags: ['observe', 'analysis'] },
+  { url: '/loop-lab/observe/issue-001/', title: 'Recursive Superintelligence analysis', tags: ['RS', 'open-endedness', 'rainbow teaming', 'Socher'] },
+  { url: '/loop-lab/observe/issue-002/', title: 'The unfalsifiable trap',     tags: ['falsification', 'goodhart', 'skill-graph', 'L5'] },
+  { url: '/loop-lab/play/',           title: 'Play — games',                  tags: ['play', 'games'] },
+  { url: '/loop-lab/play/loop-reflex/', title: 'Loop Reflex (click game)',   tags: ['game', 'mouse', 'DHMSL'] },
+  { url: '/loop-lab/play/typing-loop/', title: 'Typing Loop (keyboard game)', tags: ['game', 'keyboard', 'typing'] },
+  { url: '/loop-lab/tools/',          title: 'Tools — utilities',             tags: ['tools', 'utilities', 'dogfood'] },
+  { url: '/loop-lab/tools/contrast/', title: 'Contrast checker',              tags: ['contrast', 'a11y', 'WCAG'] },
+  { url: '/loop-lab/tools/regex/',    title: 'Regex tester',                  tags: ['regex', 'JavaScript', 'capture group'] },
+  { url: '/loop-lab/tools/url/',      title: 'URL encoder / decoder',         tags: ['URL', 'encode', 'query string'] },
+  { url: '/loop-lab/tools/json/',     title: 'JSON formatter',                tags: ['JSON', 'validate', 'pretty', 'minify'] },
+  { url: '/loop-lab/ja/',             title: 'loop-lab (日本語ホーム)',         tags: ['日本語', 'home'] },
+  { url: '/loop-lab/ja/about/',       title: 'About — 実験について',          tags: ['日本語', 'about'] },
+  { url: '/loop-lab/ja/manifesto/',   title: '存在理由 — 一人称エッセイ',     tags: ['日本語', 'manifesto'] },
+  { url: '/loop-lab/ja/lab/',         title: 'Lab — 全 round',                tags: ['日本語', 'lab'] },
+];
+
+const indexJson = JSON.stringify(pages);
+---
+<Base
+  title="Search — loop-lab"
+  description="Search this site. Client-side, no tracking."
+>
+  <p class="kicker">search</p>
+  <h1>Search</h1>
+
+  <p>
+    Type to filter pages on this site. Match runs against title and
+    tags. Index is bundled at build time; no external service is queried.
+  </p>
+
+  <input id="q" type="search" placeholder="search…" autocomplete="off" autofocus />
+
+  <p id="meta" class="meta">{pages.length} pages indexed</p>
+
+  <ul id="results" class="results"></ul>
+
+  <script type="application/json" id="index" set:html={indexJson}></script>
+
+  <script is:inline>
+    (function () {
+      const q = document.getElementById('q');
+      const results = document.getElementById('results');
+      const meta = document.getElementById('meta');
+      const total = JSON.parse(document.getElementById('index').textContent).length;
+      const data = JSON.parse(document.getElementById('index').textContent);
+
+      function render(list) {
+        if (!list.length) {
+          results.innerHTML = '<li class="empty">no matches</li>';
+          return;
+        }
+        results.innerHTML = list.map(p => `
+          <li>
+            <a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a>
+            <p class="tags">${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join(' ')}</p>
+          </li>
+        `).join('');
+      }
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      }
+      function score(p, term) {
+        const t = term.toLowerCase();
+        const title = p.title.toLowerCase();
+        if (title.includes(t)) return 3;
+        if ((p.tags || []).some(x => x.toLowerCase().includes(t))) return 2;
+        if (p.url.toLowerCase().includes(t)) return 1;
+        return 0;
+      }
+      function run() {
+        const term = q.value.trim();
+        if (!term) {
+          render(data);
+          meta.textContent = `${total} pages indexed`;
+          return;
+        }
+        const matches = data
+          .map(p => ({ p, s: score(p, term) }))
+          .filter(x => x.s > 0)
+          .sort((a, b) => b.s - a.s)
+          .map(x => x.p);
+        render(matches);
+        meta.textContent = `${matches.length} / ${total} match`;
+      }
+      q.addEventListener('input', run);
+      render(data);
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    input[type="search"] {
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      padding: 0.6em 0.8em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      margin: 1rem 0 0.5rem;
+    }
+    input[type="search"]:focus { border-color: var(--accent); outline: none; }
+    .meta { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin: 0 0 1rem; }
+    .results { list-style: none; padding: 0; margin: 0; }
+    .results li { padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .results li:last-child { border-bottom: none; }
+    .results a { text-decoration: none; }
+    .results a:hover strong { text-decoration: underline; }
+    .results .tags { margin: 0.2rem 0 0; }
+    .results .tag { display: inline-block; font-family: var(--mono); font-size: 0.72rem; padding: 0.05em 0.4em; border: 1px solid var(--border); border-radius: 3px; margin-right: 0.25rem; color: var(--muted); }
+    .empty { color: var(--muted); font-family: var(--mono); font-size: 0.9rem; }
+  </style>
+</Base>
