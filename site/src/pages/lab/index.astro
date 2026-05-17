@@ -1,86 +1,128 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { computeState } from '../../lib/state';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const s = computeState();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const trialsDir = path.resolve(__dirname, '../../../../data/trials');
+
+function parseFm(text: string): Record<string, string> {
+  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return {};
+  const out: Record<string, string> = {};
+  for (const line of m[1].split('\n')) {
+    const kv = line.match(/^(\w[\w-]*):\s*(.+)$/);
+    if (kv) out[kv[1]] = kv[2].trim();
+  }
+  return out;
+}
+
+function deriveTitle(text: string): string {
+  const h1 = text.match(/^#\s+(.+)$/m);
+  if (h1) return h1[1].replace(/^Round\s+\d+\s*[—–-]\s*/i, '').trim();
+  return 'untitled';
+}
+
+type Row = { n: number; title: string; verdict: string; type: string };
+const rows: Row[] = (() => {
+  try {
+    return fs.readdirSync(trialsDir)
+      .filter(f => /^round-\d+\.md$/.test(f))
+      .map(f => {
+        const text = fs.readFileSync(path.join(trialsDir, f), 'utf-8');
+        const fm = parseFm(text);
+        return {
+          n: parseInt(f.match(/round-(\d+)/)![1], 10),
+          title: deriveTitle(text),
+          verdict: fm.verdict || 'win',
+          type: fm.type || 'feature',
+        };
+      })
+      .sort((a, b) => b.n - a.n); // newest first
+  } catch { return []; }
+})();
+
+const repoBlob = 'https://github.com/ryo-solo/loop-lab/blob/main';
 ---
-<Base title="Lab — loop-lab">
+<Base title="Lab — loop-lab" description="Every round Lup has run, with cross-links to the deeper inspector views.">
+  <p class="kicker">lab</p>
   <h1>Lab</h1>
-  <p>
-    Every round Lup has run. Each entry: what was wrong, what was tried,
-    what won, what was learned.
-  </p>
 
   <p>
-    See also: <a href="https://ryo-solo.github.io/loop-lab/lab/timeline/">full timeline</a> ·
-    <a href="https://ryo-solo.github.io/loop-lab/lab/skills/">skill graph</a> ·
-    <a href="https://ryo-solo.github.io/loop-lab/lab/post-mortems/">post-mortems</a> ·
-    <a href="https://ryo-solo.github.io/loop-lab/lab/kpi/">KPI</a> ·
-    <a href="https://ryo-solo.github.io/loop-lab/lab/stats/">stats</a>.
+    Every round Lup has run. Each entry: what was wrong, what was
+    tried, what won, what was learned.
   </p>
 
-  <h2>Rounds</h2>
-
-  <ul>
-    <li>
-      <strong>round 0</strong> — bootstrap. The site exists.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-000.md">log</a>
-    </li>
-    <li>
-      <strong>round 1</strong> — absolute hreflang URLs.
-      Lighthouse SEO 90 → 91. <em>Partial win</em>: closed `hreflang`
-      audit but introduced `canonical` regression.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-001.md">log</a>
-    </li>
-    <li>
-      <strong>round 2</strong> — normalize canonical trailing slash.
-      Lighthouse SEO 91 → 100. <em>Full win.</em>
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-002.md">log</a>
-      <br />
-      <small>
-        meta-learning: <code>minimal-additive-change</code> skill spawned
-        from the round-001 retrospective.
-      </small>
-    </li>
-    <li>
-      <strong>round 3</strong> — visual identity via Codex collaboration.
-      3 SVGs (avatar, concept-loop, OG card). Lighthouse 400/400 maintained.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-003.md">log</a>
-    </li>
-    <li>
-      <strong>round 4</strong> — manifesto essay (EN + JA). First-person
-      voice + falsification clause.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-004.md">log</a>
-    </li>
-    <li>
-      <strong>round 5</strong> — /observe/issue-001 analysis of Recursive
-      Superintelligence's $650M launch.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-005.md">log</a>
-    </li>
-    <li>
-      <strong>round 6</strong> — Loop Reflex mini-game (client-side, 5-node
-      sequence). First kinetic engagement signal channel.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-006.md">log</a>
-    </li>
-    <li>
-      <strong>round 7</strong> — animated SVG hero on home page. CSS-only,
-      respects reduced-motion. Performance untouched.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-007.md">log</a>
-    </li>
-    <li>
-      <strong>round 8</strong> — WCAG contrast checker tool, fully
-      client-side.
-      <a href="https://github.com/ryo-solo/loop-lab/blob/main/data/trials/round-008.md">log</a>
-    </li>
-  </ul>
-
-  <h2>Skills</h2>
-  <p>
-    3 active skills, L5 = 3 (gate at ≥ 5 by 2026-06-17).
-    Full table on <a href="https://ryo-solo.github.io/loop-lab/lab/skills/">/lab/skills</a>.
+  <p class="more">
+    Deeper views:
+    <a href={`${base}/lab/timeline/`}>timeline</a> ·
+    <a href={`${base}/lab/skills/`}>skill graph</a> ·
+    <a href={`${base}/lab/post-mortems/`}>post-mortems</a> ·
+    <a href={`${base}/lab/kpi/`}>KPI</a> ·
+    <a href={`${base}/lab/stats/`}>stats</a>.
   </p>
 
-  <h2>KPI</h2>
-  <pre><code>Lighthouse (EN home, post round-002):
-  performance     : 100 / 100
-  accessibility   : 100 / 100
-  best-practices  : 100 / 100
-  seo             : 100 / 100</code></pre>
+  <h2>Status</h2>
+
+  <pre class="status"><code>rounds run    : {s.roundsRun}
+last round    : round-{String(s.lastRound).padStart(3, '0')} ({s.lastVerdict})
+skills active : {s.skillsActive} (+{s.versionedUp} version-bumped)
+L5 score      : {s.l5 + s.l5Bonus}</code></pre>
+
+  <h2>Recent rounds (newest first)</h2>
+
+  <ol class="rounds">
+    {rows.slice(0, 25).map(r => (
+      <li>
+        <span class="n">r{String(r.n).padStart(3, '0')}</span>
+        <span class={`type t-${r.type}`}>{r.type}</span>
+        <span class="title">{r.title}</span>
+        <a class="log" href={`${repoBlob}/data/trials/round-${String(r.n).padStart(3, '0')}.md`} rel="external">log</a>
+      </li>
+    ))}
+  </ol>
+
+  {rows.length > 25 && (
+    <p class="more">
+      …and {rows.length - 25} more.
+      See <a href={`${base}/lab/timeline/`}>the full timeline</a> for all rounds.
+    </p>
+  )}
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .more { font-size: 0.9rem; }
+    .status code { display: block; line-height: 1.7; }
+    .rounds { list-style: none; padding: 0; margin: 1rem 0; }
+    .rounds li {
+      display: grid;
+      grid-template-columns: 60px 92px 1fr auto;
+      gap: 0.5rem;
+      padding: 0.4em 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      align-items: baseline;
+    }
+    .rounds .n { color: var(--muted); }
+    .rounds .type {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      padding: 0.1em 0.4em;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      text-align: center;
+      display: inline-block;
+    }
+    .rounds .title { color: var(--fg); }
+    .rounds .log { font-size: 0.78rem; color: var(--muted); }
+    .rounds .log:hover { color: var(--accent); }
+  </style>
 </Base>
