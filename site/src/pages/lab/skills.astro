@@ -1,0 +1,141 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Hand-maintained for now; later rounds may sync this from .claude/skills/
+const skills = [
+  {
+    name: 'rsi-tournament',
+    version: 'v0.1',
+    spawned: '2026-05-17 (bootstrap)',
+    parent: null,
+    role: 'core / main round loop',
+    invocations: 10,
+    wins: 9,
+    partial: 1,
+    status: 'active',
+  },
+  {
+    name: 'diagnose-and-rank',
+    version: 'v0.1',
+    spawned: '2026-05-17 (bootstrap)',
+    parent: null,
+    role: 'core / weakness selection',
+    invocations: 10,
+    wins: 10,
+    partial: 0,
+    status: 'active',
+  },
+  {
+    name: 'minimal-additive-change',
+    version: 'v0.1',
+    spawned: '2026-05-17 (round-002 meta)',
+    parent: 'rsi-tournament',
+    role: 'discipline / anti-regression',
+    invocations: 7,
+    wins: 7,
+    partial: 0,
+    status: 'active',
+  },
+];
+
+const candidates = [
+  { name: 'single-pass-content-round', trigger: 'when content quality is the deliverable, skip n=5 tournament' },
+  { name: 'language-deferral-rule', trigger: 'JA mirror of an EN content page; defer until traffic justifies translation' },
+  { name: 'pre-traffic-discipline', trigger: 'relax automation when machine metrics are the only fitness signal' },
+];
+
+const totalSpawned = skills.length;
+const totalRetired = 0;
+const l5 = totalSpawned + totalRetired;
+---
+<Base
+  title="Skill graph — loop-lab"
+  description="The live state of Lup's skill set. Spawned, active, retired."
+>
+  <p class="kicker">lab / skill graph</p>
+  <h1>Skill graph</h1>
+
+  <p>
+    These are the procedures Lup currently uses. Each is versioned.
+    Their counts and parentage are what the L5 metric measures.
+  </p>
+
+  <pre class="hero-stat"><code>L5 score      : {l5}  (gate ≥ 5 by 2026-06-17)
+spawned       : {totalSpawned}
+retired       : {totalRetired}
+loop-spawned  : {skills.filter(s => s.parent).length}</code></pre>
+
+  <h2>Active skills</h2>
+
+  <table class="skills">
+    <thead>
+      <tr>
+        <th>name</th>
+        <th>v</th>
+        <th>spawned by</th>
+        <th>uses</th>
+        <th>win rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {skills.map(s => (
+        <tr>
+          <td><code>{s.name}</code><br /><small>{s.role}</small></td>
+          <td>{s.version}</td>
+          <td><small>{s.parent ?? 'bootstrap'}</small></td>
+          <td>{s.invocations}</td>
+          <td>{((s.wins + s.partial * 0.5) / Math.max(1, s.invocations) * 100).toFixed(0)}%
+            <br /><small>{s.wins}W / {s.partial}P / {s.invocations - s.wins - s.partial}L</small>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2>Spawn / retire log</h2>
+  <ul>
+    <li>2026-05-17 (bootstrap) — spawned <code>rsi-tournament</code>, <code>diagnose-and-rank</code></li>
+    <li>2026-05-17 (round-002 meta) — spawned <code>minimal-additive-change</code> from round-001 retrospective</li>
+  </ul>
+
+  <h2>Candidate spawns (watched patterns)</h2>
+  <p>
+    Patterns Lup has noticed but not yet skill-ified. Rule: a pattern
+    is a candidate after 2 observations and a skill after 3.
+  </p>
+  <ul class="candidates">
+    {candidates.map(c => (
+      <li><code>{c.name}</code> — {c.trigger}</li>
+    ))}
+  </ul>
+
+  <p class="footnote">
+    The full source of each skill is in
+    <a href="https://github.com/ryo-solo/loop-lab/tree/main/.claude/skills">
+      .claude/skills/
+    </a>.
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .hero-stat code { display: block; line-height: 1.7; }
+    table.skills {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      margin: 1rem 0;
+    }
+    .skills th, .skills td {
+      text-align: left;
+      padding: 0.5em 0.4em;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .skills th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .skills small { color: var(--muted); font-size: 0.78rem; }
+    .candidates code { font-size: 0.85rem; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
