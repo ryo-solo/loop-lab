@@ -8,7 +8,7 @@
 
 set -e
 
-if [[ -z "$(git diff --cached --name-only | grep -E '\.(astro|ts|tsx|js|jsx|json|mjs|cjs)$' || true)" ]]; then
+if [[ -z "$(git diff --cached --name-only | grep -E '\.(astro|ts|tsx|js|jsx|json|mjs|cjs|svg)$|^site/(astro\.config|tsconfig)' || true)" ]]; then
   echo "pre-commit: no build-relevant files staged, skipping build."
   exit 0
 fi
