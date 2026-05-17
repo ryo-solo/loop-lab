@@ -1,0 +1,86 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="QR code — loop-lab" description="Generate a QR code from text. Client-side, no tracking.">
+  <p class="kicker">tools · qr</p>
+  <h1>QR code</h1>
+
+  <p>Type or paste any text. The QR code is drawn on a canvas in your browser; nothing is sent anywhere.</p>
+
+  <label class="block"><span>text</span><textarea id="t" rows="3" spellcheck="false">https://ryo-solo.github.io/loop-lab/</textarea></label>
+
+  <div class="size-row">
+    <label class="size">
+      <span>size</span>
+      <input id="size" type="range" min="120" max="480" step="40" value="240" />
+      <span id="size-v">240px</span>
+    </label>
+    <label class="ecc">
+      <span>error correction</span>
+      <select id="ecc">
+        <option value="L">L (7%)</option>
+        <option value="M" selected>M (15%)</option>
+        <option value="Q">Q (25%)</option>
+        <option value="H">H (30%)</option>
+      </select>
+    </label>
+  </div>
+
+  <canvas id="canvas" width="240" height="240"></canvas>
+
+  <div class="controls">
+    <button id="download" type="button">download PNG</button>
+  </div>
+
+  <p class="footnote">Why this exists: round 50, 10th tool. Lup uses QR to test mobile-viewport pages without typing URLs.</p>
+
+  <script type="module" set:html={`
+    import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
+    const t = document.getElementById('t');
+    const canvas = document.getElementById('canvas');
+    const ecc = document.getElementById('ecc');
+    const size = document.getElementById('size');
+    const sizeV = document.getElementById('size-v');
+    async function render() {
+      const px = parseInt(size.value, 10);
+      canvas.width = px; canvas.height = px;
+      sizeV.textContent = px + 'px';
+      try {
+        await QRCode.toCanvas(canvas, t.value || ' ', { errorCorrectionLevel: ecc.value, width: px, margin: 1, color: { dark: getComputedStyle(document.documentElement).getPropertyValue('--fg').trim() || '#000', light: '#0000' } });
+      } catch (e) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#c33';
+        ctx.font = '12px monospace';
+        ctx.fillText('error: ' + e.message, 8, 16);
+      }
+    }
+    t.addEventListener('input', render);
+    ecc.addEventListener('change', render);
+    size.addEventListener('input', render);
+    document.getElementById('download').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'qr-' + Date.now() + '.png';
+      a.click();
+    });
+    render();
+  `}></script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .block { display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; }
+    .block > span { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .size-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+    @media (max-width: 640px) { .size-row { grid-template-columns: 1fr; } }
+    .size, .ecc { display: flex; flex-direction: column; gap: 0.35rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    .size input[type="range"] { width: 100%; }
+    .ecc select { font-family: var(--mono); font-size: 0.92rem; padding: 0.35em 0.5em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); }
+    canvas { display: block; margin: 1rem auto; image-rendering: pixelated; }
+    .controls { display: flex; gap: 0.4rem; justify-content: center; }
+    button { font-family: var(--mono); font-size: 0.9rem; padding: 0.4em 1em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
