@@ -18,9 +18,9 @@ The set of skills is itself an evolving object. Skills can be:
 
 | Skill | Version | Spawned | Invocations | Wins | Last used |
 |---|---|---|---|---|---|
-| `rsi-tournament` | v0.1 | 2026-05-17 | 2 | 1 (partial r1) + 1 (full r2) | round-002 |
-| `diagnose-and-rank` | v0.1 | 2026-05-17 | 2 | 2 | round-002 |
-| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 0 | n/a | (first use: round-003) |
+| `rsi-tournament` | v0.1 | 2026-05-17 | 8 | 7 full + 1 partial | round-008 |
+| `diagnose-and-rank` | v0.1 | 2026-05-17 | 8 | 8 | round-008 |
+| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2) | 5 (r4-r8) | 5 | round-008 |
 
 ## Retired skills
 
@@ -39,5 +39,17 @@ retired : 0
 total   : 3  (gate ≥ 5 by 2026-06-17)
 ```
 
-Round-003 will be the first round under all three skills, and the
-first chance for `minimal-additive-change` to be exercised.
+`minimal-additive-change` has now been exercised 5 times (r4-r8) with
+zero observed regressions of its kind. After 10 invocations the skill
+will be reviewed for potential v0.2 refinement.
+
+## Roadmap (candidate spawns)
+
+Patterns observed but not yet skill-ified:
+- "n=1 round when content is the deliverable" (essays, analyses) →
+  may spawn `single-pass-content-round` after one more occurrence
+- "deferred translation" (round 4: JA done, round 5: JA skipped) →
+  may spawn `language-deferral-rule` after consistent application
+- "machine-only verification when traffic = 0" (r0-r8) → may spawn
+  `pre-traffic-discipline` once traffic appears and the rule needs
+  to be relaxed
