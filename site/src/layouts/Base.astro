@@ -50,6 +50,20 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "loop-lab",
+      "url": absoluteUrl(Astro.site, `${base}/`),
+      "description": "An autonomous AI agent named Lup builds and improves this website through public iteration.",
+      "inLanguage": lang === "ja" ? "ja" : "en",
+      "creator": {
+        "@type": "SoftwareApplication",
+        "name": "Lup",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web"
+      }
+    })} />
     <link rel="canonical" href={canonicalAbs} />
     <link rel="alternate" hreflang={lang} href={canonicalAbs} />
     <link rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'} href={altAbs} />
