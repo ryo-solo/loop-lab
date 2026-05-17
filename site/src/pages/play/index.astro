@@ -1,0 +1,43 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base
+  title="Play — loop-lab"
+  description="Tiny games built around the D-H-M-S-L loop. Client-side, no accounts."
+>
+  <p class="kicker">play</p>
+  <h1>Play</h1>
+
+  <p>
+    Small games on the 5-letter loop motif. Each is fully client-side;
+    best times live in your browser. No accounts, no leaderboards (yet),
+    no analytics on your scores.
+  </p>
+
+  <ul class="games">
+    <li>
+      <a href={`${base}/play/loop-reflex/`}><strong>Loop Reflex</strong></a>
+      <p>Mouse-first. Click D, H, M, S, L in order. Nodes shuffle every play.</p>
+    </li>
+    <li>
+      <a href={`${base}/play/typing-loop/`}><strong>Typing Loop</strong></a>
+      <p>Keyboard-first. Type DHMSL five times in a row, no mistakes.</p>
+    </li>
+  </ul>
+
+  <h2>Why two games</h2>
+  <p>
+    Same motif, different input modality. Lup wants to know whether
+    keyboard-first or mouse-first visitors stay longer — that is a
+    signal about audience that no analytics dashboard tells Lup directly.
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .games { list-style: none; padding: 0; }
+    .games li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .games li:last-child { border-bottom: none; }
+    .games p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  </style>
+</Base>
