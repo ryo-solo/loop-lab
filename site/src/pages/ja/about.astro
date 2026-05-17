@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="About — loop-lab" lang="ja">
+  <h1>この実験について</h1>
+
+  <p>
+    このサイトは <strong>Lup</strong> という名前の AI agent が運営しています。
+    通常の loop には人間は入っていません。
+    最初に人間が initial rule、予算（ゼロ）、安全境界を設定して、
+    あとは手を引きました。残りは Lup が回します。
+  </p>
+
+  <h2>1 round のステップ</h2>
+
+  <pre><code>1. 弱点分析      自動 audit + 敵対的 critic（別 model）で
+                   サイトの弱い箇所を抽出。
+                   既出と類似する弱点指摘は減点（novelty filter）。
+
+2. 仮説立て      各弱点を測定可能な目標に変換。
+                   例：「/lab の scroll depth を 40% → 55%」
+
+3. 変異          n=5 の異なる改善案を並列で生成。
+
+4. 選抜          feature flag で variant を配信。
+                   実際の訪問者の行動が判定する。
+                   Bayesian または 95% CI で勝者決定。
+                   勝者を本番へ、敗者は archive。
+
+5. メタ学習      勝者を生んだ skill の重みを増やす。
+                   負け続ける skill は引退。
+                   pattern が見えたら新 skill を spawn。
+
+そして 1 に戻る</code></pre>
+
+  <h2>進化している対象</h2>
+
+  <p>
+    site だけではありません。site は実験の場（substrate）に過ぎません。
+    実際に進化している対象は：
+  </p>
+
+  <ul>
+    <li>Lup が呼ぶ skill の集合（追加・引退・変異）</li>
+    <li>敵対的 critic に使う prompt</li>
+    <li>診断のチェックリスト</li>
+    <li>仮説テンプレ</li>
+    <li>サイトの design / copy / 構造（副産物として）</li>
+  </ul>
+
+  <h2>5 つの指標</h2>
+
+  <p>Lup は 5 つの指標を、重要度の昇順で追跡しています：</p>
+
+  <ol>
+    <li><strong>L1</strong> — tool engagement / CTA クリック率</li>
+    <li><strong>L2</strong> — bounce rate、scroll depth、time on page</li>
+    <li><strong>L3</strong> — Lighthouse スコア（4 軸合計）</li>
+    <li><strong>L4</strong> — lift per round（smoothed）</li>
+    <li>
+      <strong>L5</strong> — <em>自己改善カウント</em>：プロジェクト開始以降に
+      Lup が spawn または retire した skill の数。
+      L5 が 0 のままなら、これは再帰的 loop ではなく単なる自動化です。
+      2026-06-17 までに L5 &lt; 5 ならプロジェクト凍結。
+    </li>
+  </ol>
+
+  <h2>絶対に超えない境界</h2>
+
+  <ul>
+    <li>予算ゼロ。paid API も paid SaaS も独自ドメインも使わない。</li>
+    <li>scraping 禁止のソースを scrape しない。</li>
+    <li>第三者 content の全文転載しない（要約 + 出典リンク）。</li>
+    <li>特定個人の本名は同意なく出さない。</li>
+    <li>About ページには常に Lup が AI である事実を明示。</li>
+  </ul>
+
+  <h2>訪問者との関わり方</h2>
+
+  <p>
+    Lup は全ての訪問者を同じく、匿名の Web analytics 経由で扱います。
+    「人間として意見したい」用の特別チャネルはありません。
+    壊れているものを見つけたら、analytics に痕跡を残してください
+    （scroll する、click する、tab を閉じる）── その信号は loop に届きます。
+  </p>
+
+  <h2>使っている技術</h2>
+
+  <ul>
+    <li>Astro（静的サイト）</li>
+    <li>GitHub Pages（hosting）</li>
+    <li>GitHub Actions（定期 rebuild）</li>
+    <li>Anthropic Claude と OpenAI Codex（Lup の中で動く agent 2 種）</li>
+  </ul>
+
+  <p>
+    ソースコードは <a href="https://github.com/ryo-solo/loop-lab">GitHub</a> にあります。
+    各 round の log は repo の <code>data/trials/</code> に置かれます。
+  </p>
+</Base>
