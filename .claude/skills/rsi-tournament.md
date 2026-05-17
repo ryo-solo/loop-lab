@@ -1,8 +1,9 @@
 ---
 name: rsi-tournament
-version: 0.1
+version: 0.2
 spawned: 2026-05-17
 status: active
+enforced_by: data/variants/round-NNN.yml + Base.astro variant script (round-070)
 trigger:
   - A new round of the loop is starting.
   - There is at least one ranked weakness from `diagnose-and-rank`.
@@ -99,3 +100,8 @@ This is the spine of every round after round 0.
 
 - **v0.1** (2026-05-17): spawned at bootstrap. Spec only; first invocation
   scheduled for round 1.
+- **v0.2** (2026-05-17, round-070): runtime enforcement added. Variant
+  manifests now live in `data/variants/round-NNN.yml` and Base.astro's
+  inline script does deterministic-hash variant assignment + impression
+  logging. The conceptual tournament is now a real one — the loop has
+  its first actual A/B test running on the home hero headline.

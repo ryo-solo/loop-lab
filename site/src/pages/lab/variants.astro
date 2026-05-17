@@ -1,0 +1,115 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadLatestManifest } from '../../lib/variants';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const manifest = loadLatestManifest();
+---
+<Base
+  title="Variants — loop-lab"
+  description="Active A/B test: variants, hypothesis, your bucket, your locally-recorded events."
+>
+  <p class="kicker">lab / variants</p>
+  <h1>A/B variants</h1>
+
+  {manifest ? (
+    <>
+      <p>
+        Round <code>{manifest.trial_id}</code> is running variants on
+        <code>{manifest.target_page}</code>. Target metric:
+        <code>{manifest.target_metric}</code>.
+      </p>
+
+      <h2>Hypothesis</h2>
+      <pre class="hyp"><code>{manifest.hypothesis}</code></pre>
+
+      <h2>Variants</h2>
+      <table class="vt">
+        <thead><tr><th>id</th><th>weight</th><th>name</th><th>headline</th></tr></thead>
+        <tbody>
+          {manifest.variants.map(v => (
+            <tr>
+              <td><code>{v.id}</code></td>
+              <td>{(v.weight * 100).toFixed(0)}%</td>
+              <td>{v.name}</td>
+              <td><em>{v.headline}</em></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>Stop condition</h2>
+      <pre class="stop"><code>{manifest.stop_condition}</code></pre>
+
+      <h2>Your bucket (this browser)</h2>
+      <p id="your-bucket" class="bucket">…</p>
+
+      <h2>Your local events</h2>
+      <p class="footnote">
+        Your impressions and scroll events live in <code>localStorage</code>,
+        on your device only. Nothing is sent to a server (because there is
+        no server). Lup's aggregation is a future round; for now, this
+        page lets you inspect what the loop would see if the events were
+        pooled across visitors.
+      </p>
+      <pre id="events" class="events"><code>(loading)</code></pre>
+
+      <p>
+        <button id="clear" type="button">clear local events</button>
+      </p>
+
+      <script is:inline>
+        (function () {
+          const SESSION_KEY = 'loop-lab.session';
+          const EVENTS_KEY = 'loop-lab.events';
+          const sid = localStorage.getItem(SESSION_KEY) || '(no session yet — visit home)';
+          let bucket = '(visit home first)';
+          let h = 0;
+          if (sid && sid !== '(no session yet — visit home)') {
+            for (let i = 0; i < sid.length; i++) h = ((h << 5) - h + sid.charCodeAt(i)) | 0;
+            const r = (Math.abs(h) % 10000) / 10000;
+            bucket = `r=${r.toFixed(3)} session=${sid.slice(0,8)}…`;
+          }
+          document.getElementById('your-bucket').textContent = bucket;
+          let events = [];
+          try { events = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); } catch (e) {}
+          const counts = {};
+          for (const e of events) {
+            const k = `${e.variant}:${e.type}`;
+            counts[k] = (counts[k] || 0) + 1;
+          }
+          const lines = [
+            `total events: ${events.length}`,
+            `by variant × type:`,
+            ...Object.entries(counts).sort().map(([k, v]) => `  ${k}: ${v}`),
+            '',
+            'last 10 events:',
+            ...events.slice(-10).map(e => `  ${new Date(e.t).toISOString()} ${e.variant} ${e.type}`),
+          ];
+          document.getElementById('events').textContent = lines.join('\n');
+          document.getElementById('clear').addEventListener('click', () => {
+            localStorage.removeItem(EVENTS_KEY);
+            location.reload();
+          });
+        })();
+      </script>
+
+      <style>
+        .hyp, .stop { white-space: pre-wrap; font-family: var(--mono); font-size: 0.88rem; padding: 0.75em; background: rgba(127,127,127,0.06); border-radius: 4px; }
+        table.vt { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.85rem; margin: 1rem 0; }
+        .vt th, .vt td { text-align: left; padding: 0.5em 0.4em; border-bottom: 1px solid var(--border); }
+        .vt th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .bucket { font-family: var(--mono); font-size: 0.92rem; padding: 0.5em 0.75em; border: 1px solid var(--border); border-radius: 4px; }
+        .events { font-family: var(--mono); font-size: 0.82rem; padding: 0.75em; background: rgba(127,127,127,0.06); border-radius: 4px; overflow-x: auto; }
+        button { font-family: var(--mono); font-size: 0.85rem; padding: 0.35em 0.8em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; }
+        button:hover { border-color: var(--accent); color: var(--accent); }
+        .footnote { margin-top: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+      </style>
+    </>
+  ) : (
+    <p>No active variant manifest found.</p>
+  )}
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  </style>
+</Base>

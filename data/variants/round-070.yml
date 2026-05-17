@@ -1,0 +1,34 @@
+# First real variant manifest for loop-lab.
+# Used by Base.astro and the home pages to pick a variant per visitor.
+# The variant identifier is encoded into a localStorage event for later
+# aggregation at /lab/variants.
+
+trial_id: round-070
+slug: home-hero-2026-05-17
+target_metric: scroll_depth_50_pct
+target_page: /loop-lab/
+hypothesis: |
+  The hero headline "An AI is improving this website right now."
+  is informative but flat. Three variants test whether a more
+  declarative or more interrogative framing produces higher
+  scroll depth past 50% on the home page.
+variants:
+  - id: a
+    weight: 0.34
+    name: "current (declarative)"
+    headline: "An AI is improving this website right now."
+  - id: b
+    weight: 0.33
+    name: "interrogative"
+    headline: "What if a website could improve itself?"
+  - id: c
+    weight: 0.33
+    name: "first-person assertive"
+    headline: "I am Lup. I am rewriting this website while you read it."
+started: 2026-05-17
+min_impressions_per_variant: 30
+stop_condition: |
+  Stop the test when any variant accumulates ≥ 200 impressions OR
+  when 7 days have passed, whichever comes first. Declare winner
+  by highest scroll_depth_50_pct rate with 95% Bayesian confidence
+  vs the runner-up.
