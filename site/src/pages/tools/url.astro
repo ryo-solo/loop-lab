@@ -1,0 +1,140 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="URL encoder / decoder — loop-lab"
+  description="Encode and decode URLs, percent-escapes, and query strings. Client-side, no tracking."
+>
+  <p class="kicker">tools · url</p>
+  <h1>URL encoder / decoder</h1>
+
+  <p>
+    Bidirectional URL encoding. Paste raw text or an encoded URL.
+    The other field updates live.
+  </p>
+
+  <div class="grid">
+    <label>
+      <span>raw</span>
+      <textarea id="raw" rows="3" spellcheck="false">https://example.com/path?q=hello world&lang=ja</textarea>
+    </label>
+    <label>
+      <span>encoded</span>
+      <textarea id="enc" rows="3" spellcheck="false"></textarea>
+    </label>
+  </div>
+
+  <div class="controls">
+    <button id="copy-raw" type="button">copy raw</button>
+    <button id="copy-enc" type="button">copy encoded</button>
+    <button id="swap" type="button">swap</button>
+    <button id="clear" type="button">clear</button>
+  </div>
+
+  <h2>Query string breakdown</h2>
+  <div id="qs" class="qs">—</div>
+
+  <p class="footnote">
+    Why this exists: round 19 of loop-lab. Three tools now share the
+    /tools section.
+  </p>
+
+  <script is:inline>
+    (function () {
+      const raw = document.getElementById('raw');
+      const enc = document.getElementById('enc');
+      const qs = document.getElementById('qs');
+
+      let lastEdited = 'raw';
+
+      function fromRaw() {
+        try {
+          enc.value = encodeURI(raw.value);
+        } catch { enc.value = '(invalid)'; }
+        updateQS(raw.value);
+      }
+      function fromEnc() {
+        try {
+          raw.value = decodeURI(enc.value);
+        } catch { raw.value = '(invalid)'; }
+        updateQS(raw.value);
+      }
+      function updateQS(s) {
+        const i = s.indexOf('?');
+        if (i < 0) { qs.textContent = '—'; return; }
+        const queryPart = s.slice(i + 1).split('#')[0];
+        if (!queryPart) { qs.textContent = '—'; return; }
+        const pairs = queryPart.split('&').map(p => {
+          const [k, ...v] = p.split('=');
+          let dk = k, dv = v.join('=');
+          try { dk = decodeURIComponent(k); } catch {}
+          try { dv = decodeURIComponent(dv); } catch {}
+          return { k: dk, v: dv };
+        });
+        qs.innerHTML = '<dl>' + pairs.map(p => `
+          <div class="pair">
+            <dt>${escapeHtml(p.k)}</dt>
+            <dd>${escapeHtml(p.v)}</dd>
+          </div>
+        `).join('') + '</dl>';
+      }
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+      }
+
+      raw.addEventListener('input', () => { lastEdited = 'raw'; fromRaw(); });
+      enc.addEventListener('input', () => { lastEdited = 'enc'; fromEnc(); });
+
+      document.getElementById('copy-raw').addEventListener('click', () => navigator.clipboard?.writeText(raw.value));
+      document.getElementById('copy-enc').addEventListener('click', () => navigator.clipboard?.writeText(enc.value));
+      document.getElementById('swap').addEventListener('click', () => {
+        const t = raw.value; raw.value = enc.value; enc.value = t;
+        if (lastEdited === 'raw') fromEnc(); else fromRaw();
+      });
+      document.getElementById('clear').addEventListener('click', () => {
+        raw.value = ''; enc.value = ''; qs.textContent = '—';
+      });
+
+      fromRaw();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      margin: 1.25rem 0 0.75rem;
+    }
+    .grid label { display: flex; flex-direction: column; gap: 0.35rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea {
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      padding: 0.6em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      resize: vertical;
+      width: 100%;
+    }
+    .controls { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    button {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 0.35em 0.8em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .qs dl { margin: 0; font-family: var(--mono); font-size: 0.88rem; }
+    .qs .pair { display: grid; grid-template-columns: 30% 70%; gap: 0.5rem; padding: 0.25em 0; border-bottom: 1px solid var(--border); }
+    .qs dt { color: var(--muted); }
+    .qs dd { margin: 0; word-break: break-all; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
