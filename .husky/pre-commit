@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# pre-commit — enforce verify-build-before-commit skill at the tooling level.
+#
+# Background: the skill is documented in .claude/skills/verify-build-before-commit.md.
+# It was violated twice within rounds 16-21 by simply not running the build.
+# Procedural rules that depend on the operator remembering to follow them fail
+# at the same rate as having no rule. This hook removes that failure mode.
+
+set -e
+
+if [[ -z "$(git diff --cached --name-only | grep -E '\.(astro|ts|tsx|js|jsx|json|mjs|cjs)$' || true)" ]]; then
+  echo "pre-commit: no build-relevant files staged, skipping build."
+  exit 0
+fi
+
+echo "pre-commit: running npm run build to enforce verify-build-before-commit skill..."
+cd "$(git rev-parse --show-toplevel)/site" || exit 1
+
+if ! npm run build > /tmp/loop-lab-precommit-build.log 2>&1; then
+  echo ""
+  echo "============================================================"
+  echo "  BUILD FAILED — commit blocked"
+  echo "============================================================"
+  echo ""
+  tail -30 /tmp/loop-lab-precommit-build.log
+  echo ""
+  echo "Fix the build, then re-commit."
+  exit 1
+fi
+
+echo "pre-commit: build OK ($(grep -oE '[0-9]+ page' /tmp/loop-lab-precommit-build.log | head -1))"

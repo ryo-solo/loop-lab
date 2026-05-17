@@ -24,7 +24,9 @@ The set of skills is itself an evolving object. Skills can be:
 | `pre-traffic-discipline` | v0.1 | 2026-05-17 (post-r13 meta) | 1 | 1W | round-016 |
 | `single-pass-content-round` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a | — |
 | `verify-build-before-commit` | v0.1 | 2026-05-17 (post-r16 meta) | 3 | 3W | round-019 |
-| `dogfood-tool` | v0.1 | 2026-05-17 (post-r19 meta) | 0 | n/a (first use: round-021+) | — |
+| `dogfood-tool` | v0.1 | 2026-05-17 (post-r19 meta) | 1 | 1W | round-021 |
+| `verify-build-before-commit` | **v0.2** | bumped 2026-05-17 (r22 enforcement) | (re-counted under v0.2) | n/a | round-022 |
+| `meta-enforce-skill` | v0.1 | 2026-05-17 (post-r21 meta) | 1 | 1W (self, in r22) | round-022 |
 
 ## Retired skills
 
@@ -41,9 +43,11 @@ The set of skills is itself an evolving object. Skills can be:
 ## L5 (self-improvement count) since 2026-05-17
 
 ```
-spawned : 7
-retired : 0
-total   : 7  (gate ≥ 5 by 2026-06-17 → CLEARED + 2)
+spawned        : 8
+versioned-up   : 1  (verify-build-before-commit v0.1 → v0.2)
+retired        : 0
+L5 total       : 8 (+ 1 version-up bonus = 9 self-improvement events)
+gate ≥ 5 by 2026-06-17 → CLEARED + 3
 ```
 
 **Gate cleared 30 days early at L5=5; +1 since.** Falsification

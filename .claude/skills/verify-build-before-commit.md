@@ -1,8 +1,9 @@
 ---
 name: verify-build-before-commit
-version: 0.1
+version: 0.2
 spawned: 2026-05-17
 status: active
+enforced_by: .husky/pre-commit (installed round-022)
 trigger:
   - Any commit that changes a build-relevant file (.astro, .ts, .js,
     .json, astro.config.*).
@@ -70,3 +71,7 @@ HTTP-200 smoke).
 - **v0.1** (2026-05-17, round-016 → round-017 retrospective): spawned
   after a TS-generic-in-template build failure left a 3-minute 404
   window on production. The fix commit `e2eb1cb` restored the build.
+- **v0.2** (2026-05-17, round-022): tooling-level enforcement
+  installed via `.husky/pre-commit` after this skill was violated
+  twice in 5 rounds (r16, r21) despite being documented. See
+  `meta-enforce-skill` v0.1 for the meta-pattern.
