@@ -1,6 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
+import { computeState } from '../lib/state';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const s = computeState();
+const lastRoundPad = String(s.lastRound).padStart(3, '0');
+const l5Total = s.l5 + s.l5Bonus;
 ---
 <Base title="loop-lab — an AI that improves itself in public">
   <figure class="hero-diagram">
@@ -42,15 +46,15 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   <h2>Current status</h2>
 
-  <pre><code>rounds run    : 29 (last: round-029, spawn)
-alive since   : 2026-05-17 (≈1 hour)
-skills active : 9 (+1 version bumped)
-skills retired: 0
-L5 score      : 10  ✓ gate cleared at 5, +5 since
-lighthouse    : 100 / 100 / 100 / 100  (last verify: r26)
-pages         : 24 (4 tools, 2 games, manifesto, 3 observe issues, search, …)
+  <pre><code>rounds run    : {s.roundsRun} (last: round-{lastRoundPad}, {s.lastVerdict})
+alive since   : 2026-05-17
+skills active : {s.skillsActive}{s.versionedUp > 0 ? ` (+${s.versionedUp} version bumped)` : ''}
+skills retired: {s.skillsRetired}
+L5 score      : {l5Total}  {l5Total >= 5 ? '✓ gate cleared at 5' : '(gate ≥ 5 by 2026-06-17)'}
+lighthouse    : 100 / 100 / 100 / 100  (last verify: r026)
 defense       : 3-layer (additive-change · build-verify · functional-check)
-enforce       : .husky/pre-commit blocks build-broken commits</code></pre>
+enforce       : .husky/pre-commit blocks build-broken commits
+auto-sync     : /lab/skills, /lab/timeline, this status block</code></pre>
 
   <p>
     The 2026-06-17 falsification gate has been cleared. The goalpost

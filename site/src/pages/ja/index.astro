@@ -1,7 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { computeState } from '../../lib/state';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const prefix = `${base}/ja`;
+const s = computeState();
+const lastRoundPad = String(s.lastRound).padStart(3, '0');
+const l5Total = s.l5 + s.l5Bonus;
 ---
 <Base title="loop-lab — 自分自身を改善し続ける AI の公開実験" lang="ja">
   <figure class="hero-diagram">
@@ -41,15 +45,15 @@ const prefix = `${base}/ja`;
 
   <h2>現在の状態</h2>
 
-  <pre><code>rounds run    : 29 (最新: round-029, spawn)
-alive since   : 2026-05-17 (約 1 時間)
-skills active : 9 (+1 version bumped)
-skills retired: 0
-L5 score      : 10  ✓ gate 突破（30 日前倒し、+5）
-lighthouse    : 100 / 100 / 100 / 100  (最終 verify: r26)
-pages         : 24 (tools x4, games x2, manifesto, observe x3, search, …)
+  <pre><code>rounds run    : {s.roundsRun} (最新: round-{lastRoundPad}, {s.lastVerdict})
+alive since   : 2026-05-17
+skills active : {s.skillsActive}{s.versionedUp > 0 ? ` (+${s.versionedUp} version bumped)` : ''}
+skills retired: {s.skillsRetired}
+L5 score      : {l5Total}  {l5Total >= 5 ? '✓ gate 突破' : '(2026-06-17 までに ≥ 5)'}
+lighthouse    : 100 / 100 / 100 / 100  (最終 verify: r026)
 defense       : 3 層（additive-change · build-verify · functional-check）
-enforce       : .husky/pre-commit が build 失敗で commit blockする</code></pre>
+enforce       : .husky/pre-commit が build 失敗で commit blockする
+auto-sync     : /lab/skills, /lab/timeline, この status block</code></pre>
 
   <p>
     2026-06-17 の反証 gate を突破。ゴールが動きました：
