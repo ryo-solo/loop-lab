@@ -1,0 +1,228 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Loop Reflex — a 5-node click game"
+  description="Click D, H, M, S, L in order as fast as you can. A tiny game on the loop-lab substrate."
+>
+  <p class="kicker">play · loop reflex</p>
+  <h1>Loop Reflex</h1>
+
+  <p>
+    Click the five nodes <strong>D → H → M → S → L</strong>, in order,
+    as fast as you can. That is the entire game. The nodes shuffle
+    position each round. Your best time is stored locally in this
+    browser — there is no server.
+  </p>
+
+  <div id="game" class="game" data-state="idle">
+    <div class="hud">
+      <div><span class="lbl">next:</span> <span id="next" class="next">D</span></div>
+      <div><span class="lbl">time:</span> <span id="time">0.00</span>s</div>
+      <div><span class="lbl">best:</span> <span id="best">—</span>s</div>
+    </div>
+
+    <svg id="board" viewBox="0 0 320 220" aria-label="Click the nodes D, H, M, S, L in order.">
+      <!-- nodes are positioned dynamically -->
+    </svg>
+
+    <div class="controls">
+      <button id="start" type="button">start</button>
+      <button id="reset" type="button" hidden>reset best</button>
+    </div>
+
+    <p id="result" class="result" hidden></p>
+  </div>
+
+  <p class="footnote">
+    Why this exists: round 6 of loop-lab. A way to make the 5-step
+    loop diagram <em>do something</em> instead of just sitting on the
+    about page. Times will be aggregated server-side later if any
+    real visitors arrive.
+  </p>
+
+  <script is:inline>
+    (function () {
+      const LABELS = ['D', 'H', 'M', 'S', 'L'];
+      const board = document.getElementById('board');
+      const nextEl = document.getElementById('next');
+      const timeEl = document.getElementById('time');
+      const bestEl = document.getElementById('best');
+      const startBtn = document.getElementById('start');
+      const resetBtn = document.getElementById('reset');
+      const resultEl = document.getElementById('result');
+      const game = document.getElementById('game');
+
+      const STORAGE_KEY = 'loop-lab.loop-reflex.best';
+      let state = 'idle';
+      let order = 0;
+      let startTime = 0;
+      let timer = null;
+
+      function loadBest() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const n = raw ? parseFloat(raw) : NaN;
+        bestEl.textContent = Number.isFinite(n) ? n.toFixed(2) : '—';
+        resetBtn.hidden = !Number.isFinite(n);
+      }
+
+      function placeNodes() {
+        const w = 320, h = 220, r = 22;
+        const pad = r + 8;
+        const positions = [];
+        const tries = 200;
+        while (positions.length < 5) {
+          let ok = true;
+          const x = Math.random() * (w - 2 * pad) + pad;
+          const y = Math.random() * (h - 2 * pad) + pad;
+          for (const p of positions) {
+            const dx = p.x - x, dy = p.y - y;
+            if (dx * dx + dy * dy < (2 * r + 16) * (2 * r + 16)) { ok = false; break; }
+          }
+          if (ok) positions.push({ x, y });
+          if (positions.length === 0 && tries-- <= 0) break;
+        }
+        const shuffled = LABELS.slice().sort(() => Math.random() - 0.5);
+        board.innerHTML = positions.map((p, i) => {
+          const lbl = shuffled[i];
+          return `
+            <g class="node" data-label="${lbl}" tabindex="0" role="button" aria-label="Node ${lbl}">
+              <circle cx="${p.x}" cy="${p.y}" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
+              <text x="${p.x}" y="${p.y}" text-anchor="middle" dominant-baseline="central" font-family="ui-monospace, monospace" font-size="14" fill="currentColor">${lbl}</text>
+            </g>
+          `;
+        }).join('');
+        attachClicks();
+      }
+
+      function attachClicks() {
+        for (const node of board.querySelectorAll('.node')) {
+          node.addEventListener('click', () => handleClick(node));
+          node.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(node); }
+          });
+        }
+      }
+
+      function handleClick(node) {
+        if (state !== 'playing') return;
+        const lbl = node.dataset.label;
+        if (lbl === LABELS[order]) {
+          node.classList.add('hit');
+          order++;
+          if (order === LABELS.length) {
+            finish();
+          } else {
+            nextEl.textContent = LABELS[order];
+          }
+        } else {
+          node.classList.add('miss');
+          setTimeout(() => node.classList.remove('miss'), 220);
+        }
+      }
+
+      function start() {
+        order = 0;
+        nextEl.textContent = LABELS[0];
+        placeNodes();
+        state = 'playing';
+        game.dataset.state = 'playing';
+        startBtn.textContent = 'restart';
+        resultEl.hidden = true;
+        startTime = performance.now();
+        timer = requestAnimationFrame(tick);
+      }
+
+      function tick(t) {
+        if (state !== 'playing') return;
+        const elapsed = (performance.now() - startTime) / 1000;
+        timeEl.textContent = elapsed.toFixed(2);
+        timer = requestAnimationFrame(tick);
+      }
+
+      function finish() {
+        state = 'done';
+        game.dataset.state = 'done';
+        cancelAnimationFrame(timer);
+        const elapsed = (performance.now() - startTime) / 1000;
+        timeEl.textContent = elapsed.toFixed(2);
+        const prev = parseFloat(localStorage.getItem(STORAGE_KEY) || 'NaN');
+        if (!Number.isFinite(prev) || elapsed < prev) {
+          localStorage.setItem(STORAGE_KEY, elapsed.toFixed(2));
+          loadBest();
+          resultEl.innerHTML = `done in <strong>${elapsed.toFixed(2)}s</strong> — new best`;
+        } else {
+          resultEl.innerHTML = `done in <strong>${elapsed.toFixed(2)}s</strong> (best ${prev.toFixed(2)}s)`;
+        }
+        resultEl.hidden = false;
+      }
+
+      startBtn.addEventListener('click', start);
+      resetBtn.addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        loadBest();
+      });
+
+      loadBest();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .game {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .lbl { color: var(--muted); }
+    .next { font-weight: 700; color: var(--accent); }
+    #board {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 60vh;
+      color: var(--fg);
+    }
+    .node { cursor: pointer; transition: opacity 0.15s; }
+    .node:hover circle { stroke-width: 3; }
+    .node.hit circle { stroke: var(--accent); fill: rgba(0,102,204,0.08); }
+    .node.miss circle { stroke: #c33; }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    button {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      padding: 0.4em 1em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .result {
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      color: var(--fg);
+    }
+    .footnote {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+  </style>
+</Base>
