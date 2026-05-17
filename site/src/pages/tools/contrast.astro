@@ -1,0 +1,199 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Contrast checker — loop-lab"
+  description="Type two colors, get the WCAG contrast ratio and AA / AAA pass-fail. Client-side, no tracking."
+>
+  <p class="kicker">tools · contrast</p>
+  <h1>Contrast checker</h1>
+
+  <p>
+    Type two colors (hex, rgb, or named). Get the WCAG contrast ratio
+    and pass/fail badges. Everything runs in your browser; nothing is
+    sent anywhere.
+  </p>
+
+  <div class="grid">
+    <label>
+      <span>foreground</span>
+      <div class="row">
+        <input id="fg" type="text" value="#111111" autocomplete="off" spellcheck="false" />
+        <input id="fg-pick" type="color" value="#111111" aria-label="pick foreground color" />
+      </div>
+    </label>
+    <label>
+      <span>background</span>
+      <div class="row">
+        <input id="bg" type="text" value="#fafafa" autocomplete="off" spellcheck="false" />
+        <input id="bg-pick" type="color" value="#fafafa" aria-label="pick background color" />
+      </div>
+    </label>
+  </div>
+
+  <div id="preview" class="preview" role="region" aria-label="contrast preview">
+    <p class="preview-large">Large text sample</p>
+    <p class="preview-small">Smaller body sample — the quick brown fox jumps over the lazy dog. 1234567890.</p>
+  </div>
+
+  <div id="report" class="report">
+    <div class="ratio"><span class="lbl">ratio</span> <span id="ratio">—</span></div>
+    <ul class="badges">
+      <li class="badge" data-key="aa-large"><span class="lbl">AA large</span> <span class="verdict" data-verdict>—</span> <small>(≥ 3.0)</small></li>
+      <li class="badge" data-key="aa-normal"><span class="lbl">AA normal</span> <span class="verdict" data-verdict>—</span> <small>(≥ 4.5)</small></li>
+      <li class="badge" data-key="aaa-large"><span class="lbl">AAA large</span> <span class="verdict" data-verdict>—</span> <small>(≥ 4.5)</small></li>
+      <li class="badge" data-key="aaa-normal"><span class="lbl">AAA normal</span> <span class="verdict" data-verdict>—</span> <small>(≥ 7.0)</small></li>
+    </ul>
+  </div>
+
+  <p class="footnote">
+    Why this exists: round 8 of loop-lab. A tiny demo that the site
+    can do something *useful* without calling out to any API. Source
+    is in <a href="https://github.com/ryo-solo/loop-lab/blob/main/site/src/pages/tools/contrast.astro">this file</a>.
+    Lup also uses it on Lup's own pages.
+  </p>
+
+  <script is:inline>
+    (function () {
+      const fg = document.getElementById('fg');
+      const bg = document.getElementById('bg');
+      const fgPick = document.getElementById('fg-pick');
+      const bgPick = document.getElementById('bg-pick');
+      const preview = document.getElementById('preview');
+      const ratioEl = document.getElementById('ratio');
+      const badges = document.querySelectorAll('.badge');
+
+      function parse(input) {
+        const s = input.trim();
+        // try hex
+        const hex = s.replace(/^#/, '');
+        if (/^[0-9a-f]{3}$/i.test(hex)) {
+          const r = parseInt(hex[0] + hex[0], 16);
+          const g = parseInt(hex[1] + hex[1], 16);
+          const b = parseInt(hex[2] + hex[2], 16);
+          return [r, g, b];
+        }
+        if (/^[0-9a-f]{6}$/i.test(hex)) {
+          return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+        }
+        // try rgb()
+        const rgb = s.match(/^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+        if (rgb) return [+rgb[1], +rgb[2], +rgb[3]];
+        // try named via temporary element
+        const probe = document.createElement('div');
+        probe.style.color = s;
+        document.body.appendChild(probe);
+        const c = getComputedStyle(probe).color;
+        document.body.removeChild(probe);
+        const m = c.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+        if (m) return [+m[1], +m[2], +m[3]];
+        return null;
+      }
+
+      function relLum([r, g, b]) {
+        const f = v => {
+          const x = v / 255;
+          return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      }
+
+      function ratio(c1, c2) {
+        const l1 = relLum(c1), l2 = relLum(c2);
+        const [a, b] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (a + 0.05) / (b + 0.05);
+      }
+
+      function toHex(rgb) {
+        return '#' + rgb.map(n => n.toString(16).padStart(2, '0')).join('');
+      }
+
+      function update() {
+        const f = parse(fg.value);
+        const b = parse(bg.value);
+        if (!f || !b) {
+          ratioEl.textContent = '—';
+          for (const badge of badges) badge.querySelector('[data-verdict]').textContent = '—';
+          return;
+        }
+        const r = ratio(f, b);
+        ratioEl.textContent = r.toFixed(2);
+        const verdicts = {
+          'aa-large': r >= 3.0,
+          'aa-normal': r >= 4.5,
+          'aaa-large': r >= 4.5,
+          'aaa-normal': r >= 7.0,
+        };
+        for (const badge of badges) {
+          const k = badge.dataset.key;
+          const span = badge.querySelector('[data-verdict]');
+          span.textContent = verdicts[k] ? 'pass' : 'fail';
+          badge.dataset.pass = verdicts[k] ? '1' : '0';
+        }
+        preview.style.color = toHex(f);
+        preview.style.background = toHex(b);
+        fgPick.value = toHex(f);
+        bgPick.value = toHex(b);
+      }
+
+      function sync(src, target) {
+        target.value = src.value;
+        update();
+      }
+
+      [fg, bg].forEach(el => el.addEventListener('input', update));
+      fgPick.addEventListener('input', () => sync(fgPick, fg));
+      bgPick.addEventListener('input', () => sync(bgPick, bg));
+      update();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0 1rem;
+    }
+    .grid label { display: flex; flex-direction: column; gap: 0.4rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    .row { display: flex; gap: 0.5rem; align-items: center; }
+    .row input[type="text"] {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      padding: 0.4em 0.6em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+    }
+    .row input[type="color"] {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .preview {
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .preview-large { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem; }
+    .preview-small { font-size: 0.95rem; margin: 0; }
+    .report { font-family: var(--mono); margin: 1rem 0 0; }
+    .ratio { font-size: 1.4rem; margin-bottom: 0.5rem; }
+    .ratio .lbl { color: var(--muted); font-size: 0.85rem; }
+    .badges { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+    .badge { display: flex; gap: 0.5rem; align-items: center; padding: 0.35em 0.6em; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; }
+    .badge[data-pass="1"] { border-color: var(--accent); color: var(--accent); }
+    .badge[data-pass="0"] { opacity: 0.6; }
+    .badge .lbl { color: var(--muted); font-size: 0.8rem; }
+    .badge .verdict { font-weight: 700; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
