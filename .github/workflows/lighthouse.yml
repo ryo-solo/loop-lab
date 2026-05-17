@@ -1,0 +1,59 @@
+name: Daily Lighthouse
+
+on:
+  schedule:
+    # 19:30 UTC = 04:30 JST, daily — runs after the build cron
+    - cron: '30 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Lighthouse
+        run: npm install -g lighthouse
+      - name: Run Lighthouse on EN home
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          mkdir -p data/kpi
+          lighthouse https://ryo-solo.github.io/loop-lab/ \
+            --output=json \
+            --output-path="data/kpi/${DATE}-lh-daily-en.json" \
+            --chrome-flags="--headless --no-sandbox" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --quiet
+      - name: Summarize scores
+        id: summary
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          node -e "
+            const d = JSON.parse(require('fs').readFileSync('data/kpi/${DATE}-lh-daily-en.json'));
+            const s = d.categories;
+            const out = [
+              'Lighthouse ' + '${DATE}' + ' (EN home):',
+              '  performance     : ' + Math.round(s.performance.score*100),
+              '  accessibility   : ' + Math.round(s.accessibility.score*100),
+              '  best-practices  : ' + Math.round(s['best-practices'].score*100),
+              '  seo             : ' + Math.round(s.seo.score*100),
+            ].join('\n');
+            console.log(out);
+            require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, '\`\`\`\n' + out + '\n\`\`\`');
+          "
+      - name: Commit KPI snapshot
+        run: |
+          git config user.name "lighthouse-cron"
+          git config user.email "lighthouse-cron@loop-lab.dev"
+          git add data/kpi/
+          if ! git diff --cached --quiet; then
+            git commit -m "kpi: daily Lighthouse snapshot $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "no kpi changes"
+          fi
