@@ -1,5 +1,5 @@
 ---
-import { langFromPath, alternatePath, t, type Lang } from '../i18n';
+import { langFromPath, alternatePath, absoluteUrl, t, type Lang } from '../i18n';
 
 interface Props {
   title: string;
@@ -15,6 +15,11 @@ const desc = description ?? strings.description_default;
 const altPath = alternatePath(lang, Astro.url.pathname, base);
 const homeHref = lang === 'en' ? `${base}/` : `${base}/ja/`;
 const prefix = lang === 'en' ? base : `${base}/ja`;
+
+// Lighthouse SEO requires absolute URLs in hreflang. Use Astro.site if set.
+const altAbs = absoluteUrl(Astro.site, altPath);
+const defaultAbs = absoluteUrl(Astro.site, `${base}/`);
+const canonicalAbs = absoluteUrl(Astro.site, Astro.url.pathname);
 ---
 <!doctype html>
 <html lang={lang}>
@@ -29,8 +34,10 @@ const prefix = lang === 'en' ? base : `${base}/ja`;
     <meta property="og:type" content="website" />
     <meta property="og:locale" content={lang === 'ja' ? 'ja_JP' : 'en_US'} />
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
-    <link rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'} href={altPath} />
-    <link rel="alternate" hreflang="x-default" href={`${base}/`} />
+    <link rel="canonical" href={canonicalAbs} />
+    <link rel="alternate" hreflang={lang} href={canonicalAbs} />
+    <link rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'} href={altAbs} />
+    <link rel="alternate" hreflang="x-default" href={defaultAbs} />
   </head>
   <body>
     <header>

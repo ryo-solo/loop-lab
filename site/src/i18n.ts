@@ -26,6 +26,15 @@ export function alternatePath(currentLang: Lang, currentPath: string, base: stri
   return pathFor(other, stripped, base);
 }
 
+export function absoluteUrl(site: URL | undefined, path: string): string {
+  // hreflang requires absolute URLs (Lighthouse SEO audit).
+  // If site is configured in astro.config, prefer it.
+  if (site) {
+    return new URL(path, site).toString();
+  }
+  return path;
+}
+
 export const t = {
   en: {
     nav: { lab: 'Lab', observe: 'Observe', about: 'About' },
