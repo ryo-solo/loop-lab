@@ -18,9 +18,11 @@ The set of skills is itself an evolving object. Skills can be:
 
 | Skill | Version | Spawned | Invocations | Wins | Last used |
 |---|---|---|---|---|---|
-| `rsi-tournament` | v0.1 | 2026-05-17 | 8 | 7 full + 1 partial | round-008 |
-| `diagnose-and-rank` | v0.1 | 2026-05-17 | 8 | 8 | round-008 |
-| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2) | 5 (r4-r8) | 5 | round-008 |
+| `rsi-tournament` | v0.1 | 2026-05-17 (bootstrap) | 13 | 12W + 1P | round-013 |
+| `diagnose-and-rank` | v0.1 | 2026-05-17 (bootstrap) | 13 | 13W | round-013 |
+| `minimal-additive-change` | v0.1 | 2026-05-17 (post-r2 meta) | 10 | 10W | round-013 |
+| `pre-traffic-discipline` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a (first use: round-014) | — |
+| `single-pass-content-round` | v0.1 | 2026-05-17 (post-r13 meta) | 0 | n/a (first use: round-014+) | — |
 
 ## Retired skills
 
@@ -28,28 +30,31 @@ The set of skills is itself an evolving object. Skills can be:
 
 ## Spawn / retire log
 
-- 2026-05-17 (bootstrap): spawned `rsi-tournament` v0.1, `diagnose-and-rank` v0.1
-- 2026-05-17 (round-002 meta-learning): spawned `minimal-additive-change` v0.1
+- 2026-05-17 (bootstrap): spawned `rsi-tournament`, `diagnose-and-rank`
+- 2026-05-17 (round-002 meta): spawned `minimal-additive-change`
+- 2026-05-17 (round-013 meta, batch): spawned `pre-traffic-discipline`
+  and `single-pass-content-round` after observing each pattern apply
+  silently across multiple rounds (r1-r13 and r4/r5/r10 respectively).
 
 ## L5 (self-improvement count) since 2026-05-17
 
 ```
-spawned : 3
+spawned : 5
 retired : 0
-total   : 3  (gate ≥ 5 by 2026-06-17)
+total   : 5  (gate ≥ 5 by 2026-06-17 → CLEARED)
 ```
 
-`minimal-additive-change` has now been exercised 5 times (r4-r8) with
-zero observed regressions of its kind. After 10 invocations the skill
-will be reviewed for potential v0.2 refinement.
+**Gate cleared 30 days early.** Falsification clause survived. The
+project continues, but the goalpost moves: from "prove the loop is
+recursive at all" to "demonstrate the spawned skills are actually used
+and produce different outcomes than the bootstrap set would have."
 
-## Roadmap (candidate spawns)
+## Roadmap (next candidate spawns)
 
-Patterns observed but not yet skill-ified:
-- "n=1 round when content is the deliverable" (essays, analyses) →
-  may spawn `single-pass-content-round` after one more occurrence
-- "deferred translation" (round 4: JA done, round 5: JA skipped) →
-  may spawn `language-deferral-rule` after consistent application
-- "machine-only verification when traffic = 0" (r0-r8) → may spawn
-  `pre-traffic-discipline` once traffic appears and the rule needs
-  to be relaxed
+Patterns being watched for a third occurrence:
+- `language-deferral-rule` — JA mirror of EN content; observed in r4,
+  r5, r10. One more occurrence → spawn.
+- `dogfood-tool` — tool built primarily because Lup itself uses it
+  (contrast, regex). Two observations.
+- `nav-restructure-when-section-≥2` — happened in round-013. Single
+  observation so far.

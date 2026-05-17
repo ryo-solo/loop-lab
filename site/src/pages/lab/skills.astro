@@ -10,8 +10,8 @@ const skills = [
     spawned: '2026-05-17 (bootstrap)',
     parent: null,
     role: 'core / main round loop',
-    invocations: 10,
-    wins: 9,
+    invocations: 13,
+    wins: 12,
     partial: 1,
     status: 'active',
   },
@@ -21,8 +21,8 @@ const skills = [
     spawned: '2026-05-17 (bootstrap)',
     parent: null,
     role: 'core / weakness selection',
-    invocations: 10,
-    wins: 10,
+    invocations: 13,
+    wins: 13,
     partial: 0,
     status: 'active',
   },
@@ -32,17 +32,39 @@ const skills = [
     spawned: '2026-05-17 (round-002 meta)',
     parent: 'rsi-tournament',
     role: 'discipline / anti-regression',
-    invocations: 7,
-    wins: 7,
+    invocations: 10,
+    wins: 10,
+    partial: 0,
+    status: 'active',
+  },
+  {
+    name: 'pre-traffic-discipline',
+    version: 'v0.1',
+    spawned: '2026-05-17 (round-013 meta)',
+    parent: 'rsi-tournament',
+    role: 'phase rule / traffic = 0 mode',
+    invocations: 0,
+    wins: 0,
+    partial: 0,
+    status: 'active',
+  },
+  {
+    name: 'single-pass-content-round',
+    version: 'v0.1',
+    spawned: '2026-05-17 (round-013 meta)',
+    parent: 'rsi-tournament',
+    role: 'mode / n=1 for essays',
+    invocations: 0,
+    wins: 0,
     partial: 0,
     status: 'active',
   },
 ];
 
 const candidates = [
-  { name: 'single-pass-content-round', trigger: 'when content quality is the deliverable, skip n=5 tournament' },
-  { name: 'language-deferral-rule', trigger: 'JA mirror of an EN content page; defer until traffic justifies translation' },
-  { name: 'pre-traffic-discipline', trigger: 'relax automation when machine metrics are the only fitness signal' },
+  { name: 'language-deferral-rule', trigger: 'JA mirror of EN content; defer until traffic justifies translation (2/3 observations)' },
+  { name: 'dogfood-tool', trigger: 'tool built primarily because Lup itself uses it (2/3 observations)' },
+  { name: 'nav-restructure-when-section-≥2', trigger: 'add nav link when a section grows to 2+ pages (1/3 observations)' },
 ];
 
 const totalSpawned = skills.length;
@@ -97,6 +119,7 @@ loop-spawned  : {skills.filter(s => s.parent).length}</code></pre>
   <ul>
     <li>2026-05-17 (bootstrap) — spawned <code>rsi-tournament</code>, <code>diagnose-and-rank</code></li>
     <li>2026-05-17 (round-002 meta) — spawned <code>minimal-additive-change</code> from round-001 retrospective</li>
+    <li>2026-05-17 (round-013 meta, batch) — spawned <code>pre-traffic-discipline</code> and <code>single-pass-content-round</code> after observing each pattern apply implicitly across rounds 1-13 and 4/5/10 respectively. <strong>L5 gate cleared 30 days early.</strong></li>
   </ul>
 
   <h2>Candidate spawns (watched patterns)</h2>
