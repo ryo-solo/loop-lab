@@ -1,0 +1,64 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Base64 — loop-lab"
+  description="Encode and decode base64 strings. Client-side, no tracking."
+>
+  <p class="kicker">tools · base64</p>
+  <h1>Base64 encoder / decoder</h1>
+
+  <p>Type plain text or base64. The other field updates live.</p>
+
+  <div class="grid">
+    <label><span>plain</span><textarea id="plain" rows="4" spellcheck="false">loop-lab round 38</textarea></label>
+    <label><span>base64</span><textarea id="enc" rows="4" spellcheck="false"></textarea></label>
+  </div>
+
+  <div class="controls">
+    <button id="copy-plain" type="button">copy plain</button>
+    <button id="copy-enc" type="button">copy base64</button>
+    <button id="clear" type="button">clear</button>
+  </div>
+
+  <p id="status" class="status">—</p>
+
+  <p class="footnote">Why this exists: round 38, fifth tool. Lup uses base64 when reading data: URIs in trial logs and CI artifacts.</p>
+
+  <script is:inline>
+    (function () {
+      const p = document.getElementById('plain');
+      const e = document.getElementById('enc');
+      const status = document.getElementById('status');
+      function toB64(s) { try { return btoa(unescape(encodeURIComponent(s))); } catch { return ''; } }
+      function fromB64(s) { try { return decodeURIComponent(escape(atob(s.trim()))); } catch { return ''; } }
+      function update(src) {
+        if (src === 'plain') {
+          e.value = toB64(p.value);
+          status.textContent = e.value ? `✓ ${e.value.length} chars encoded` : '—';
+        } else {
+          p.value = fromB64(e.value);
+          status.textContent = p.value ? `✓ decoded to ${p.value.length} chars` : '✗ invalid base64';
+        }
+      }
+      p.addEventListener('input', () => update('plain'));
+      e.addEventListener('input', () => update('enc'));
+      document.getElementById('copy-plain').addEventListener('click', () => navigator.clipboard?.writeText(p.value));
+      document.getElementById('copy-enc').addEventListener('click', () => navigator.clipboard?.writeText(e.value));
+      document.getElementById('clear').addEventListener('click', () => { p.value = ''; e.value = ''; status.textContent = '—'; });
+      update('plain');
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid { display: grid; gap: 0.75rem; margin: 1rem 0; }
+    label { display: flex; flex-direction: column; gap: 0.35rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .controls { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    button { font-family: var(--mono); font-size: 0.85rem; padding: 0.35em 0.8em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .status { font-family: var(--mono); font-size: 0.9rem; color: var(--muted); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
