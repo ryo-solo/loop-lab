@@ -1,0 +1,15 @@
+node_modules/
+.DS_Store
+dist/
+.astro/
+.env
+.env.local
+.env.*.local
+.vercel/
+.wrangler/
+*.log
+.cache/
+
+# Local-only data not safe to publish
+data/critic-feedback/raw/
+.claude/memory/private/
