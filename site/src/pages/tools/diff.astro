@@ -1,0 +1,90 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Diff — loop-lab"
+  description="Compare two text blobs line by line. Client-side, no tracking."
+>
+  <p class="kicker">tools · diff</p>
+  <h1>Text diff</h1>
+
+  <p>Paste two versions of text. Lines that match are dimmed; lines added or removed are highlighted.</p>
+
+  <div class="grid">
+    <label><span>left (a)</span><textarea id="a" rows="6" spellcheck="false">round 35
+round 36
+round 37</textarea></label>
+    <label><span>right (b)</span><textarea id="b" rows="6" spellcheck="false">round 35
+round 36 changed
+round 37
+round 38</textarea></label>
+  </div>
+
+  <div id="status" class="status">—</div>
+
+  <h2>Diff</h2>
+  <pre id="out" class="out">—</pre>
+
+  <p class="footnote">Why this exists: round 40, seventh tool. Lup uses diffs constantly when comparing two trial logs or variant builds.</p>
+
+  <script is:inline>
+    (function () {
+      const a = document.getElementById('a');
+      const b = document.getElementById('b');
+      const out = document.getElementById('out');
+      const status = document.getElementById('status');
+
+      // Simple LCS-based diff (line level)
+      function diff(la, lb) {
+        const m = la.length, n = lb.length;
+        const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+        for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+          dp[i][j] = la[i-1] === lb[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+        }
+        const ops = [];
+        let i = m, j = n;
+        while (i > 0 && j > 0) {
+          if (la[i-1] === lb[j-1]) { ops.unshift(['=', la[i-1]]); i--; j--; }
+          else if (dp[i-1][j] >= dp[i][j-1]) { ops.unshift(['-', la[i-1]]); i--; }
+          else { ops.unshift(['+', lb[j-1]]); j--; }
+        }
+        while (i > 0) { ops.unshift(['-', la[i-1]]); i--; }
+        while (j > 0) { ops.unshift(['+', lb[j-1]]); j--; }
+        return ops;
+      }
+      function escape(s) { return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+
+      function run() {
+        const la = a.value.split('\n');
+        const lb = b.value.split('\n');
+        const ops = diff(la, lb);
+        let added = 0, removed = 0, same = 0;
+        const html = ops.map(([op, line]) => {
+          if (op === '+') { added++; return `<span class="add">+ ${escape(line)}</span>`; }
+          if (op === '-') { removed++; return `<span class="del">- ${escape(line)}</span>`; }
+          same++; return `<span class="eq">  ${escape(line)}</span>`;
+        }).join('\n');
+        out.innerHTML = html;
+        status.textContent = `+${added}  -${removed}  =${same}`;
+      }
+
+      a.addEventListener('input', run);
+      b.addEventListener('input', run);
+      run();
+    })();
+  </script>
+
+  <style is:global>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid { display: grid; gap: 0.75rem; margin: 1rem 0; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+    label { display: flex; flex-direction: column; gap: 0.35rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .status { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); padding: 0.4em 0.6em; border: 1px solid var(--border); border-radius: 4px; margin: 0.5rem 0; }
+    .out { font-family: var(--mono); font-size: 0.88rem; padding: 0.75em; background: rgba(127,127,127,0.06); border-radius: 4px; overflow-x: auto; line-height: 1.5; }
+    .out .add { display: block; color: #2a7a2a; background: rgba(42,122,42,0.08); }
+    .out .del { display: block; color: #c33; background: rgba(204,51,51,0.06); }
+    .out .eq  { display: block; color: var(--muted); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
