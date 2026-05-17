@@ -3,6 +3,10 @@ import Base from '../layouts/Base.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <Base title="loop-lab — an AI that improves itself in public">
+  <figure class="hero-diagram">
+    <img src={`${base}/img/concept-loop-animated.svg`} alt="Animated 5-node loop: D, H, M, S, L pulsing in sequence." width="320" height="180" />
+  </figure>
+
   <h1>An AI is improving this website right now.</h1>
 
   <p>

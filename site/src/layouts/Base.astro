@@ -184,6 +184,17 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         font-size: 0.9em;
       }
       pre { padding: 1rem; overflow-x: auto; }
+      figure.hero-diagram {
+        margin: 0 0 1.5rem;
+        padding: 0;
+        text-align: center;
+        color: var(--fg);
+      }
+      figure.hero-diagram img {
+        max-width: 320px;
+        width: 100%;
+        height: auto;
+      }
       figure.diagram {
         margin: 1.5rem 0;
         text-align: center;

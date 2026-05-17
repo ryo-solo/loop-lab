@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Five step recursive loop, with the active node cycling: D, H, M, S, L">
+  <defs>
+    <marker id="ah" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M1 1l4 2-4 2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      .arc { stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .arc-dashed { stroke-dasharray: 5 5; }
+      .node circle { stroke: currentColor; stroke-width: 2; fill: none; transition: fill 0.2s; }
+      .node text { fill: currentColor; font-family: ui-monospace, monospace; font-size: 12px; text-anchor: middle; dominant-baseline: central; }
+      .node { opacity: 0.4; animation: pulse 5s infinite linear; }
+      .node-d { animation-delay: 0s; }
+      .node-h { animation-delay: 1s; }
+      .node-m { animation-delay: 2s; }
+      .node-s { animation-delay: 3s; }
+      .node-l { animation-delay: 4s; }
+      @keyframes pulse {
+        0%, 20% { opacity: 1; }
+        21%, 100% { opacity: 0.4; }
+      }
+      .node.active circle { fill: currentColor; fill-opacity: 0.12; }
+      @media (prefers-reduced-motion: reduce) {
+        .node { animation: none; opacity: 1; }
+      }
+    </style>
+  </defs>
+  <g>
+    <path class="arc" d="M167 35C188 40 205 54 216 73" marker-end="url(#ah)"/>
+    <path class="arc" d="M217 104C207 123 190 137 167 145" marker-end="url(#ah)"/>
+    <path class="arc" d="M172 148H148" marker-end="url(#ah)"/>
+    <path class="arc" d="M123 141C105 132 94 119 86 104" marker-end="url(#ah)"/>
+    <path class="arc arc-dashed" d="M87 74C97 55 114 41 136 35" marker-end="url(#ah)"/>
+  </g>
+  <g class="node node-d"><circle cx="160" cy="32" r="13"/><text x="160" y="32">D</text></g>
+  <g class="node node-h"><circle cx="230" cy="90" r="13"/><text x="230" y="90">H</text></g>
+  <g class="node node-m"><circle cx="185" cy="148" r="13"/><text x="185" y="148">M</text></g>
+  <g class="node node-s"><circle cx="135" cy="148" r="13"/><text x="135" y="148">S</text></g>
+  <g class="node node-l"><circle cx="90" cy="90" r="13"/><text x="90" y="90">L</text></g>
+</svg>
