@@ -1,68 +1,87 @@
 ---
 import Base from '../../layouts/Base.astro';
-const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-// Hand-maintained ledger of rounds run so far.
-// Future rounds may sync this from data/trials/ at build time.
-const rounds = [
-  { n: 0,  type: 'bootstrap', title: 'site exists', verdict: 'win' },
-  { n: 1,  type: 'fix',       title: 'absolute hreflang',                    verdict: 'partial' },
-  { n: 2,  type: 'fix',       title: 'normalize canonical trailing slash',   verdict: 'win' },
-  { n: 3,  type: 'visual',    title: 'visual identity (Codex SVGs)',         verdict: 'win' },
-  { n: 4,  type: 'content',   title: 'manifesto essay (EN + JA)',            verdict: 'win' },
-  { n: 5,  type: 'content',   title: 'observe issue 001 — RS analysis',     verdict: 'win' },
-  { n: 6,  type: 'feature',   title: 'Loop Reflex mini-game',                verdict: 'win' },
-  { n: 7,  type: 'visual',    title: 'animated SVG hero',                    verdict: 'win' },
-  { n: 8,  type: 'feature',   title: 'contrast checker tool',                verdict: 'win' },
-  { n: 9,  type: 'feature',   title: 'regex tester + /tools index',          verdict: 'win' },
-  { n: 10, type: 'content',   title: 'observe issue 002 — unfalsifiable trap', verdict: 'win' },
-  { n: 11, type: 'meta',      title: 'public skill graph page',              verdict: 'win' },
-  { n: 12, type: 'feature',   title: 'Typing Loop (second game)',            verdict: 'win' },
-  { n: 13, type: 'infra',     title: '/play index + nav restructure',        verdict: 'win' },
-  { n: 14, type: 'meta',      title: 'skill spawn: pre-traffic-discipline',  verdict: 'spawn' },
-  { n: 15, type: 'meta',      title: 'skill spawn: single-pass-content-round (L5 gate cleared)', verdict: 'spawn' },
-  { n: 16, type: 'meta',      title: 'public timeline view (TS-generic regression caught, fixed in same round)', verdict: 'partial' },
-  { n: 17, type: 'meta',      title: 'skill spawn: verify-build-before-commit (from r16 failure)', verdict: 'spawn' },
-  { n: 18, type: 'infra',     title: 'sitemap + robots.txt',                 verdict: 'win' },
-  { n: 19, type: 'feature',   title: 'URL encoder/decoder (third tool)',    verdict: 'win' },
-  { n: 20, type: 'meta',      title: 'skill spawn: dogfood-tool (3 tool obs)', verdict: 'spawn' },
-  { n: 21, type: 'feature',   title: 'JSON formatter (4th tool, dogfood-tool active)', verdict: 'partial' },
-  { n: 22, type: 'meta',      title: 'pre-commit hook + skill spawn: meta-enforce-skill', verdict: 'spawn' },
-  { n: 23, type: 'feature',   title: 'client-side site search (build-time JSON index)', verdict: 'win' },
-  { n: 24, type: 'infra',     title: '/search exposed in nav (⌕ glyph)',     verdict: 'win' },
-  { n: 25, type: 'feature',   title: 'theme toggle (auto / light / dark, FOUC-free)', verdict: 'win' },
-  { n: 26, type: 'content',   title: 'observe issue 003 — failures as skill generators', verdict: 'win' },
-  { n: 27, type: 'infra',     title: 'Lighthouse r26 verify (400/400) + status sync',     verdict: 'win' },
-  { n: 28, type: 'fix',       title: 'responsive nav (chairman caught mobile breakage)',   verdict: 'partial' },
-  { n: 29, type: 'meta',      title: 'skill spawn: post-deploy-functional-check (3rd defense layer)', verdict: 'spawn' },
-];
+// Auto-sync from data/trials/*.md at build time.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const trialsDir = path.resolve(__dirname, '../../../../data/trials');
 
-const typeColors = {
-  bootstrap: '--muted',
-  fix: '--accent',
-  content: '--fg',
-  feature: '--accent',
-  visual: '--fg',
-  meta: '--accent',
-  infra: '--muted',
+function parseFrontmatter(content: string): Record<string, string> {
+  const m = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return {};
+  const out: Record<string, string> = {};
+  for (const line of m[1].split('\n')) {
+    const kv = line.match(/^(\w[\w-]*):\s*(.+)$/);
+    if (kv) out[kv[1]] = kv[2].trim();
+  }
+  return out;
+}
+
+function deriveType(text: string, fm: Record<string, string>): string {
+  if (fm.type) return fm.type;
+  const t = text.toLowerCase();
+  if (t.includes('bootstrap')) return 'bootstrap';
+  if (t.includes('skill spawn') || t.includes('meta-learning')) return 'meta';
+  if (t.includes('essay') || t.includes('manifesto') || t.includes('content')) return 'content';
+  if (t.includes('infra') || t.includes('sitemap') || t.includes('nav')) return 'infra';
+  if (t.includes('visual') || t.includes('svg')) return 'visual';
+  if (t.includes('game') || t.includes('tool')) return 'feature';
+  if (t.includes('fix') || t.includes('regression')) return 'fix';
+  return 'feature';
+}
+
+function deriveTitle(text: string, fm: Record<string, string>): string {
+  // Try to grab the first H1
+  const h1 = text.match(/^#\s+(.+)$/m);
+  if (h1) return h1[1].replace(/^Round\s+\d+\s*[—–-]\s*/i, '').trim();
+  return 'untitled';
+}
+
+type Trial = {
+  n: number;
+  type: string;
+  title: string;
+  verdict: string;
 };
 
+let trialFiles: string[] = [];
+try {
+  trialFiles = fs.readdirSync(trialsDir).filter(f => /^round-\d+\.md$/.test(f));
+} catch {}
+
+const trials: Trial[] = trialFiles.map(f => {
+  const text = fs.readFileSync(path.join(trialsDir, f), 'utf-8');
+  const fm = parseFrontmatter(text);
+  const nMatch = f.match(/round-(\d+)/);
+  const n = nMatch ? parseInt(nMatch[1], 10) : 0;
+  const verdict = (fm.verdict || (fm.winner?.includes('spawn') ? 'spawn' : 'win')).replace(/[^a-z]/g, '');
+  return {
+    n,
+    type: deriveType(text, fm),
+    title: deriveTitle(text, fm),
+    verdict: ['win', 'partial', 'spawn'].includes(verdict) ? verdict : 'win',
+  };
+}).sort((a, b) => a.n - b.n);
+
 const typeCounts: Record<string, number> = {};
-for (const r of rounds) typeCounts[r.type] = (typeCounts[r.type] ?? 0) + 1;
+for (const r of trials) typeCounts[r.type] = (typeCounts[r.type] ?? 0) + 1;
 const typeCountEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
 
-const cleanCount = rounds.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length;
-const totalCount = rounds.length;
+const cleanCount = trials.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length;
+const totalCount = trials.length;
 ---
 <Base
   title="Timeline — loop-lab"
-  description="Every round so far, one row at a time."
+  description="Every round so far, auto-synced from data/trials/."
 >
   <p class="kicker">lab / timeline</p>
   <h1>Timeline</h1>
 
   <p>
-    Every round Lup has run, in chronological order. Verdicts:
+    Every round Lup has run, auto-synced from
+    <code>data/trials/round-NNN.md</code>. Verdicts:
     <em>win</em> (target metric moved as intended),
     <em>partial</em> (target moved but a side effect introduced a
     new failure), <em>spawn</em> (a new skill was added to the
@@ -70,7 +89,7 @@ const totalCount = rounds.length;
   </p>
 
   <ol class="timeline">
-    {rounds.map(r => (
+    {trials.map(r => (
       <li class={`row v-${r.verdict}`}>
         <span class="n">r{String(r.n).padStart(3, '0')}</span>
         <span class={`type t-${r.type}`}>{r.type}</span>
@@ -92,10 +111,17 @@ const totalCount = rounds.length;
     {cleanCount}
     /
     {totalCount}
-    rounds closed cleanly. 1 partial. The partial is round-001 —
-    a regression introduced by an unprompted "free" addition. That
-    failure spawned <code>minimal-additive-change</code>, which has
-    been invoked 10 times since without recurrence of the pattern.
+    rounds closed cleanly. {totalCount - cleanCount} partial. The
+    partial verdicts came from rounds that targeted one weakness and
+    accidentally introduced a different one in the same change set.
+    Each such round seeded a new skill that has not seen the same
+    failure mode since.
+  </p>
+
+  <p class="footnote">
+    This page is generated at build time. Adding or editing a file in
+    <a href="https://github.com/ryo-solo/loop-lab/tree/main/data/trials">data/trials/</a>
+    is the only way to change it.
   </p>
 
   <style>
@@ -140,5 +166,6 @@ const totalCount = rounds.length;
     .legend { list-style: none; padding: 0; font-family: var(--mono); font-size: 0.85rem; }
     .legend li { padding: 0.2em 0; }
     .winrate { font-size: 0.95rem; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
   </style>
 </Base>
