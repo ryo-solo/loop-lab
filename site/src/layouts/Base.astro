@@ -112,6 +112,44 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
     </footer>
 
     <script is:inline>
+      // Keyboard shortcuts (round-046). g-prefix nav, ? for help, / for search.
+      (function () {
+        var BASE = '/loop-lab';
+        var routes = { h: '/', l: '/lab/', o: '/observe/', p: '/play/', t: '/tools/', s: '/search/' };
+        var awaitingPrefix = false;
+        var prefixTimer = null;
+        function isTyping() {
+          var el = document.activeElement;
+          if (!el) return false;
+          var tag = el.tagName;
+          return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+        }
+        function go(k) {
+          if (routes[k]) { window.location.pathname = BASE + routes[k]; return true; }
+          return false;
+        }
+        document.addEventListener('keydown', function (e) {
+          if (isTyping()) return;
+          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          if (e.key === '?') {
+            e.preventDefault();
+            window.location.pathname = BASE + '/help/shortcuts/';
+          } else if (e.key === '/' && window.location.pathname.indexOf('/search') !== -1) {
+            var input = document.getElementById('q');
+            if (input) { e.preventDefault(); input.focus(); }
+          } else if (awaitingPrefix && routes[e.key]) {
+            e.preventDefault();
+            go(e.key);
+            awaitingPrefix = false;
+            clearTimeout(prefixTimer);
+          } else if (e.key === 'g' && !awaitingPrefix) {
+            awaitingPrefix = true;
+            prefixTimer = setTimeout(function () { awaitingPrefix = false; }, 1500);
+          }
+        });
+      })();
+    </script>
+    <script is:inline>
       (function () {
         var btn = document.getElementById('theme-toggle');
         if (!btn) return;

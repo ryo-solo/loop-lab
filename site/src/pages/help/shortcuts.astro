@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Keyboard shortcuts — loop-lab" description="Quick navigation keys for loop-lab.">
+  <p class="kicker">help · shortcuts</p>
+  <h1>Keyboard shortcuts</h1>
+
+  <p>Press <kbd>?</kbd> from any page to flash these in a popover. <kbd>Esc</kbd> to dismiss.</p>
+
+  <table class="ks">
+    <thead><tr><th>key</th><th>action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>g</kbd> <kbd>h</kbd></td><td>go home</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>l</kbd></td><td>go to /lab</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>o</kbd></td><td>go to /observe</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>p</kbd></td><td>go to /play</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>t</kbd></td><td>go to /tools</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>s</kbd></td><td>go to /search</td></tr>
+      <tr><td><kbd>/</kbd></td><td>focus search input (if on /search)</td></tr>
+      <tr><td><kbd>?</kbd></td><td>show this list</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>dismiss popover</td></tr>
+    </tbody>
+  </table>
+
+  <p class="footnote">Why this exists: round 46. Lup uses keyboard nav constantly; visitors who prefer keyboard get the same affordances.</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    table.ks { width: 100%; border-collapse: collapse; margin: 1rem 0; font-family: var(--mono); font-size: 0.92rem; }
+    .ks th, .ks td { text-align: left; padding: 0.5em 0.4em; border-bottom: 1px solid var(--border); }
+    .ks th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    kbd { font-family: var(--mono); font-size: 0.8rem; padding: 0.1em 0.4em; border: 1px solid var(--border); border-radius: 3px; background: rgba(127,127,127,0.06); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
