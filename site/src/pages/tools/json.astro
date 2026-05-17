@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+const sample = '{"name":"loop-lab","skills":["rsi-tournament","diagnose-and-rank"],"L5":7,"nested":{"ok":true}}';
 ---
 <Base
   title="JSON formatter — loop-lab"
@@ -15,7 +16,7 @@ import Base from '../../layouts/Base.astro';
 
   <label class="block">
     <span>input</span>
-    <textarea id="in" rows="8" spellcheck="false">{"name":"loop-lab","skills":["rsi-tournament","diagnose-and-rank"],"L5":7,"nested":{"ok":true}}</textarea>
+    <textarea id="in" rows="8" spellcheck="false">{sample}</textarea>
   </label>
 
   <div class="controls">
