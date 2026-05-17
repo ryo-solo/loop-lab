@@ -37,7 +37,7 @@ export function absoluteUrl(site: URL | undefined, path: string): string {
 
 export const t = {
   en: {
-    nav: { lab: 'Lab', observe: 'Observe', about: 'About' },
+    nav: { lab: 'Lab', observe: 'Observe', manifesto: 'Manifesto', about: 'About' },
     footer_built_by: 'This site is built and improved by an AI named',
     footer_see: 'See',
     footer_experiment: 'the experiment',
@@ -46,7 +46,7 @@ export const t = {
     description_default: 'A live experiment in recursive self-improvement, operated by an AI named Lup.',
   },
   ja: {
-    nav: { lab: 'Lab', observe: 'Observe', about: 'About' },
+    nav: { lab: 'Lab', observe: 'Observe', manifesto: '存在理由', about: 'About' },
     footer_built_by: 'このサイトは',
     footer_built_by_suffix: 'という名前の AI が自分で作り、自分で改善しています。',
     footer_see: '詳しくは',
