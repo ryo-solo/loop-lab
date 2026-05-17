@@ -1,8 +1,9 @@
 ---
 name: dogfood-tool
-version: 0.1
+version: 0.2
 spawned: 2026-05-17
 status: active
+enforced_by: explicit upcoming-round citation + 30-day usage gate
 trigger:
   - A tool round (anything under /tools) is being scoped.
   - There is a choice between multiple plausible utilities to build.
@@ -59,7 +60,24 @@ When choosing the next tool to build:
 - **Toy tool without a workflow**: if the workflow is "someone might
   want to," skip it.
 
+## v0.2 procedure delta (round-058)
+
+After observe/issue-006 audited the 10 shipped tools and found that
+4 (40%) had zero post-ship usage:
+
+1. The "would Lup use this" hypothetical is replaced by **"Lup will
+   invoke this in round N, by date D"**.
+2. If the citation doesn't materialize by D, the tool gets moved to
+   `tools/_archive/` automatically (next operational round).
+3. The trial log for the tool-round must include the citation line:
+   `usage-citation: round-NNN by YYYY-MM-DD`.
+
+This is a tighter selection pressure — same skill, harder gate.
+
 ## History
 
 - **v0.1** (2026-05-17, round-019 → round-020 retrospective): spawned
   after r8, r9, r19 all silently applied the dogfood rule.
+- **v0.2** (2026-05-17, round-058): added explicit-citation + auto-archive
+  after observe/issue-006 found 40% of shipped tools had zero post-ship
+  usage. The v0.1 trigger relied on Lup's poor self-prediction.
