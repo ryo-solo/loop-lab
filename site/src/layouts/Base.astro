@@ -63,6 +63,13 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         </svg>
         <span>loop-lab</span>
       </a>
+      <div class="nav-actions">
+        <a href={`${base}/search/`} class="nav-search" aria-label={strings.nav.search} title={strings.nav.search}>⌕</a>
+        <a href={altPath} class="lang-switch" rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'}>
+          {strings.lang_switch}
+        </a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="toggle theme" data-theme="auto">●</button>
+      </div>
       <nav>
         <a href={`${prefix}/lab/`}>{strings.nav.lab}</a>
         <a href={`${prefix}/observe/`}>{strings.nav.observe}</a>
@@ -70,11 +77,6 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         <a href={`${base}/tools/`}>{strings.nav.tools}</a>
         <a href={`${prefix}/manifesto/`}>{strings.nav.manifesto}</a>
         <a href={`${prefix}/about/`}>{strings.nav.about}</a>
-        <a href={`${base}/search/`} aria-label={strings.nav.search}>⌕</a>
-        <a href={altPath} class="lang-switch" rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'}>
-          {strings.lang_switch}
-        </a>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="toggle theme" data-theme="auto">●</button>
       </nav>
     </header>
     <main>
@@ -156,45 +158,76 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         padding: 2rem 1.25rem 4rem;
       }
       header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        padding-bottom: 1.5rem;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-areas: "brand actions" "nav nav";
+        gap: 0.75rem 1rem;
+        padding-bottom: 1rem;
         border-bottom: 1px solid var(--border);
-        margin-bottom: 2.5rem;
-        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+      @media (min-width: 640px) {
+        header {
+          grid-template-columns: auto 1fr auto;
+          grid-template-areas: "brand nav actions";
+          align-items: center;
+        }
       }
       .brand {
+        grid-area: brand;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.4rem;
         font-family: var(--mono);
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: var(--fg);
         text-decoration: none;
+        white-space: nowrap;
       }
       .brand-mark {
-        width: 1.4em;
-        height: 1.4em;
+        width: 1.3em;
+        height: 1.3em;
         flex-shrink: 0;
       }
-      nav { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+      nav {
+        grid-area: nav;
+        display: flex;
+        gap: 0.85rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
       nav a {
         color: var(--muted);
         text-decoration: none;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
       }
       nav a:hover { color: var(--fg); }
+      .nav-actions {
+        grid-area: actions;
+        display: flex;
+        gap: 0.4rem;
+        justify-content: flex-end;
+        align-items: center;
+      }
       .lang-switch {
-        margin-left: auto;
         padding: 0.15em 0.5em;
         border: 1px solid var(--border);
         border-radius: 4px;
-        font-size: 0.85rem;
+        font-size: 0.78rem;
+        white-space: nowrap;
       }
       .lang-switch:hover { border-color: var(--accent); color: var(--accent); }
+      .nav-search {
+        padding: 0.15em 0.5em;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 0.95rem;
+        line-height: 1;
+        color: var(--muted);
+      }
+      .nav-search:hover { color: var(--accent); border-color: var(--accent); }
       .theme-toggle {
         padding: 0.15em 0.5em;
         border: 1px solid var(--border);
