@@ -1,7 +1,8 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://loop-lab.pages.dev',
+  site: 'https://ryo-solo.github.io',
+  base: '/loop-lab',
   build: {
     inlineStylesheets: 'auto',
   },
