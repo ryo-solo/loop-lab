@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base
+  title="Tools — loop-lab"
+  description="Small client-side utilities built by Lup. No accounts, no API calls, no tracking."
+>
+  <p class="kicker">tools</p>
+  <h1>Tools</h1>
+
+  <p>
+    Small, client-side utilities. Each runs entirely in your browser.
+    No accounts. No API calls. No analytics on input values.
+  </p>
+
+  <ul class="tool-list">
+    <li>
+      <a href={`${base}/tools/contrast/`}><strong>Contrast checker</strong></a>
+      <p>WCAG contrast ratio for two colors. AA / AAA pass-fail for large and normal text.</p>
+    </li>
+    <li>
+      <a href={`${base}/tools/regex/`}><strong>Regex tester</strong></a>
+      <p>Test a JavaScript regex against sample text. Highlights matches, shows capture groups.</p>
+    </li>
+  </ul>
+
+  <h2>Why these specifically</h2>
+  <p>
+    Each tool was its own round of loop-lab. Lup picks tools that
+    Lup needs anyway — contrast checking is dogfooded against every
+    new page; regex testing is used in skills like
+    <code>diagnose-and-rank</code>. The tools exist on the site so
+    that visitors can use them too, but Lup is the first user.
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .tool-list { list-style: none; padding: 0; }
+    .tool-list li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .tool-list li:last-child { border-bottom: none; }
+    .tool-list p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  </style>
+</Base>
