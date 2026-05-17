@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="CSV ↔ JSON — loop-lab" description="Convert CSV to JSON and back. Client-side.">
+  <p class="kicker">tools · csv</p>
+  <h1>CSV ↔ JSON</h1>
+
+  <p>Bidirectional CSV/JSON. First CSV row is treated as a header.</p>
+
+  <div class="grid">
+    <label><span>CSV</span><textarea id="csv" rows="6" spellcheck="false">round,verdict,type
+1,partial,fix
+2,win,fix
+3,win,visual</textarea></label>
+    <label><span>JSON</span><textarea id="json" rows="6" spellcheck="false"></textarea></label>
+  </div>
+
+  <p id="status" class="status">—</p>
+  <p class="footnote">Round 61. dogfood-tool v0.2: <strong>usage-citation</strong>: round-063, converting trial frontmatter into a CSV for spreadsheet review by 2026-05-18.</p>
+
+  <script is:inline>
+    (function () {
+      const csvEl = document.getElementById('csv');
+      const jsonEl = document.getElementById('json');
+      const status = document.getElementById('status');
+
+      function parseCSV(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (!lines.length) return [];
+        const header = lines[0].split(',').map(s => s.trim());
+        return lines.slice(1).map(line => {
+          const cells = line.split(',').map(s => s.trim());
+          const row = {};
+          header.forEach((h, i) => row[h] = cells[i] ?? '');
+          return row;
+        });
+      }
+      function toCSV(arr) {
+        if (!Array.isArray(arr) || !arr.length) return '';
+        const keys = Array.from(new Set(arr.flatMap(o => Object.keys(o))));
+        const header = keys.join(',');
+        const rows = arr.map(o => keys.map(k => (o[k] ?? '').toString()).join(','));
+        return [header, ...rows].join('\n');
+      }
+
+      function csvToJson() {
+        try {
+          const arr = parseCSV(csvEl.value);
+          jsonEl.value = JSON.stringify(arr, null, 2);
+          status.textContent = `✓ ${arr.length} rows`;
+        } catch (e) { status.textContent = '✗ ' + e.message; }
+      }
+      function jsonToCsv() {
+        try {
+          const arr = JSON.parse(jsonEl.value);
+          csvEl.value = toCSV(arr);
+          status.textContent = `✓ ${Array.isArray(arr) ? arr.length : 0} rows`;
+        } catch (e) { status.textContent = '✗ ' + e.message; }
+      }
+      csvEl.addEventListener('input', csvToJson);
+      jsonEl.addEventListener('input', jsonToCsv);
+      csvToJson();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid { display: grid; gap: 0.75rem; margin: 1rem 0; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+    label { display: flex; flex-direction: column; gap: 0.35rem; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .status { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); padding: 0.4em 0.6em; border: 1px solid var(--border); border-radius: 4px; margin: 0.5rem 0; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>
