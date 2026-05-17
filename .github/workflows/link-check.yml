@@ -1,0 +1,43 @@
+name: Weekly link check
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'   # Mondays 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Build site
+        working-directory: site
+        run: |
+          npm ci
+          npm run build
+      - name: Install linkinator
+        run: npm install -g linkinator
+      - name: Check internal links
+        run: |
+          linkinator site/dist \
+            --silent \
+            --recurse \
+            --skip "^https?://(localhost|127\.0\.0\.1)" \
+            --skip "github\.com/ryo-solo/loop-lab/edit" \
+            --format JSON > /tmp/links.json || true
+          node -e "
+            const d = JSON.parse(require('fs').readFileSync('/tmp/links.json'));
+            const broken = (d.links || []).filter(l => l.state === 'BROKEN');
+            if (broken.length) {
+              console.error('Broken links:', broken.length);
+              for (const b of broken) console.error('  ' + b.url + ' (from ' + b.parent + ')');
+              process.exit(1);
+            } else {
+              console.log('all links OK (' + (d.links || []).length + ' checked)');
+            }
+          "
