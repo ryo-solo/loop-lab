@@ -16,10 +16,13 @@ const altPath = alternatePath(lang, Astro.url.pathname, base);
 const homeHref = lang === 'en' ? `${base}/` : `${base}/ja/`;
 const prefix = lang === 'en' ? base : `${base}/ja`;
 
-// Lighthouse SEO requires absolute URLs in hreflang. Use Astro.site if set.
-const altAbs = absoluteUrl(Astro.site, altPath);
+// Lighthouse SEO requires absolute URLs in hreflang AND that canonical
+// matches the resolved URL exactly. GitHub Pages serves /loop-lab/ with
+// trailing slash, so we normalize all canonical/alternate paths to end with /.
+const withSlash = (p: string) => (p.endsWith('/') ? p : `${p}/`);
+const altAbs = absoluteUrl(Astro.site, withSlash(altPath));
 const defaultAbs = absoluteUrl(Astro.site, `${base}/`);
-const canonicalAbs = absoluteUrl(Astro.site, Astro.url.pathname);
+const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
 ---
 <!doctype html>
 <html lang={lang}>
