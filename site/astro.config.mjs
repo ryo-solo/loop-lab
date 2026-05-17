@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://ryo-solo.github.io',
@@ -7,4 +8,15 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   compressHTML: true,
+  integrations: [
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: {
+          en: 'en',
+          ja: 'ja',
+        },
+      },
+    }),
+  ],
 });
