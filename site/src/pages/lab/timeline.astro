@@ -32,6 +32,13 @@ const typeColors = {
   meta: '--accent',
   infra: '--muted',
 };
+
+const typeCounts: Record<string, number> = {};
+for (const r of rounds) typeCounts[r.type] = (typeCounts[r.type] ?? 0) + 1;
+const typeCountEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+
+const cleanCount = rounds.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length;
+const totalCount = rounds.length;
 ---
 <Base
   title="Timeline — loop-lab"
@@ -61,19 +68,16 @@ const typeColors = {
 
   <h2>Summary by type</h2>
   <ul class="legend">
-    {Object.entries(rounds.reduce<Record<string, number>>((acc, r) => {
-      acc[r.type] = (acc[r.type] ?? 0) + 1;
-      return acc;
-    }, {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
+    {typeCountEntries.map(([k, v]) => (
       <li><span class={`type t-${k}`}>{k}</span> × {v}</li>
     ))}
   </ul>
 
   <h2>Win rate</h2>
   <p class="winrate">
-    {rounds.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length}
+    {cleanCount}
     /
-    {rounds.length}
+    {totalCount}
     rounds closed cleanly. 1 partial. The partial is round-001 —
     a regression introduced by an unprompted "free" addition. That
     failure spawned <code>minimal-additive-change</code>, which has
