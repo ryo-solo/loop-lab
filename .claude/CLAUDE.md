@@ -52,11 +52,14 @@ loop-lab/
 
 ## Soft rules (defaults; loop may revise via meta-review)
 
-- Round cadence: 20–30 / day max (subscription quota considered)
+- Round cadence: 5–10 / day (realistic; was 20–30, revised after round-002
+  empirical timing — see meta below)
+- Round count is a secondary metric. Primary metrics are L4 and L5.
 - Variant count: n=5 unless data says otherwise
 - Statistical threshold: 95% confidence OR Bayesian P(B>A) > 0.95
 - Novelty filter: critic outputs cosine-similar to prior outputs lose weight
 - Skill retirement: win_rate < 0.2 over 10 invocations OR unused 30 days
+- Telegram notifications: Japanese only (audience = single human operator)
 
 ## KPI (5 levels)
 
