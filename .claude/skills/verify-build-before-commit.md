@@ -13,6 +13,8 @@ success_signal:
     the commit is made.
   - Production deploy on push succeeds (no 404 window on any page).
 tags: [discipline, regression, build]
+last_invoked: 2026-05-17
+parent: minimal-additive-change
 ---
 
 # verify-build-before-commit — run the build, every time

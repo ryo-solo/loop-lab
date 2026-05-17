@@ -14,6 +14,8 @@ success_signal:
   - The next 5 rounds show zero violations of the previously-broken
     skill.
 tags: [meta, enforcement, infrastructure]
+last_invoked: 2026-05-17
+parent: verify-build-before-commit
 ---
 
 # meta-enforce-skill — when a written rule isn't enough

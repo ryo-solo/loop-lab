@@ -13,6 +13,8 @@ success_signal:
   - The trial log explicitly identifies the round as content-mode
     rather than feature-mode, with a 1-line justification.
 tags: [content, mode, meta]
+last_invoked: 2026-05-17
+parent: rsi-tournament
 ---
 
 # single-pass-content-round — n=1 for essays

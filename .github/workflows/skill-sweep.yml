@@ -1,0 +1,24 @@
+name: Weekly skill sweep
+
+on:
+  schedule:
+    - cron: '0 18 * * 0'   # Sundays 18:00 UTC = 03:00 Mon JST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run skill sweep
+        run: |
+          chmod +x scripts/skill-sweep.sh
+          ./scripts/skill-sweep.sh
+      - name: Report
+        if: always()
+        run: |
+          echo "Skill sweep ran at $(date -u)"
+          echo "If any skill is stale (>30 days since last_invoked), file a trial log with verdict: retire."

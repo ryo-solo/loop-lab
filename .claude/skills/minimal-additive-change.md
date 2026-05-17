@@ -11,6 +11,8 @@ success_signal:
     audited (independently scored against Lighthouse / a11y) with the
     same rigor as the primary change.
 tags: [discipline, anti-regression, meta]
+last_invoked: 2026-05-17
+parent: rsi-tournament
 ---
 
 # minimal-additive-change — every addition is a change

@@ -14,6 +14,8 @@ success_signal:
   - Editing the source automatically updates the display on next build.
   - No "remember to update both" maintenance burden.
 tags: [discipline, anti-drift, infrastructure]
+last_invoked: 2026-05-17
+parent: minimal-additive-change
 ---
 
 # build-time-derived-display — render from source, never transcribe

@@ -12,6 +12,8 @@ success_signal:
   - The /lab/post-mortems page lists the incident (auto-rendered from
     the trial log eventually).
 tags: [discipline, content, post-incident]
+last_invoked: 2026-05-17
+parent: minimal-additive-change
 ---
 
 # post-mortem-doc — every real failure gets a public entry

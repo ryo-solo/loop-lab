@@ -10,6 +10,7 @@ success_signal:
   - A ranked list of weaknesses is produced.
   - Each weakness has a novelty_score and a measurable angle.
 tags: [core, loop, diagnosis]
+last_invoked: 2026-05-17
 ---
 
 # diagnose-and-rank — find what is weak

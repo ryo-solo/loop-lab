@@ -11,6 +11,7 @@ success_signal:
   - The trial log under `data/trials/round-N.md` is written and committed.
   - L5 score is recomputed.
 tags: [core, loop, meta]
+last_invoked: 2026-05-17
 ---
 
 # rsi-tournament — the main round loop

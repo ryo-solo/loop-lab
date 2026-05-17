@@ -14,6 +14,8 @@ success_signal:
   - The round's log includes the line "pre-traffic mode: traffic = 0,
     selection by machine metric only".
 tags: [discipline, phase, meta]
+last_invoked: 2026-05-17
+parent: rsi-tournament
 ---
 
 # pre-traffic-discipline — when there are no humans yet

@@ -4,8 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const skillsDir = path.resolve(__dirname, '../../../../../.claude/skills');
+const archiveDir = path.join(skillsDir, '_archive');
 
 function parseFm(content: string): Record<string, string> {
   const m = content.match(/^---\n([\s\S]*?)\n---/);
@@ -18,32 +20,69 @@ function parseFm(content: string): Record<string, string> {
   return out;
 }
 
-type SkillRow = { name: string; version: string; spawned: string; status: string; enforcedBy?: string };
+type SkillRow = {
+  name: string; version: string; spawned: string; status: string;
+  parent?: string; enforcedBy?: string; lastInvoked?: string;
+};
 
-let skillFiles: string[] = [];
-try {
-  skillFiles = fs.readdirSync(skillsDir).filter(f => f.endsWith('.md') && f !== 'index.md');
-} catch {}
+function load(dir: string, defaultStatus = 'active'): SkillRow[] {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith('.md') && f !== 'index.md')
+    .map(f => {
+      const raw = fs.readFileSync(path.join(dir, f), 'utf-8');
+      const fm = parseFm(raw);
+      return {
+        name: fm.name || f.replace(/\.md$/, ''),
+        version: fm.version || '?',
+        spawned: fm.spawned || '?',
+        status: fm.status || defaultStatus,
+        parent: fm.parent || undefined,
+        enforcedBy: fm.enforced_by,
+        lastInvoked: fm.last_invoked,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
 
-const skills: SkillRow[] = skillFiles.map(f => {
-  const raw = fs.readFileSync(path.join(skillsDir, f), 'utf-8');
-  const fm = parseFm(raw);
-  return {
-    name: fm.name || f.replace(/\.md$/, ''),
-    version: fm.version || '?',
-    spawned: fm.spawned || '?',
-    status: fm.status || 'active',
-    enforcedBy: fm.enforced_by,
-  };
-}).sort((a, b) => a.name.localeCompare(b.name));
+const active = load(skillsDir, 'active');
+const retired = load(archiveDir, 'retired');
+const l5 = active.length + retired.length;
 
-const activeCount = skills.filter(s => s.status === 'active').length;
-const retiredCount = skills.filter(s => s.status !== 'active').length;
-const l5 = activeCount + retiredCount;
+type Node = SkillRow & { children: Node[]; depth: number };
+const byName = new Map<string, Node>();
+for (const s of active) byName.set(s.name, { ...s, children: [], depth: 0 });
+const roots: Node[] = [];
+for (const n of byName.values()) {
+  if (n.parent && byName.has(n.parent)) byName.get(n.parent)!.children.push(n);
+  else roots.push(n);
+}
+function setDepth(n: Node, d: number) { n.depth = d; for (const c of n.children) setDepth(c, d + 1); }
+roots.forEach(r => setDepth(r, 0));
+
+type Placed = { n: Node; x: number; y: number };
+const COL_W = 220, ROW_H = 64;
+const placed: Placed[] = [];
+function layout(n: Node, depth: number, slot: { row: number }) {
+  placed.push({ n, x: slot.row * COL_W + 40, y: depth * ROW_H + 32 });
+  if (n.children.length === 0) slot.row++;
+  else for (const c of n.children) layout(c, depth + 1, slot);
+}
+{ const slot = { row: 0 }; for (const r of roots) layout(r, 0, slot); }
+const svgW = Math.max(...placed.map(p => p.x + COL_W), 600);
+const svgH = Math.max(...placed.map(p => p.y + ROW_H), 200);
+
+const placedByName = new Map(placed.map(p => [p.n.name, p]));
+const edges: { from: Placed; to: Placed }[] = [];
+for (const p of placed) {
+  if (p.n.parent && placedByName.has(p.n.parent)) {
+    edges.push({ from: placedByName.get(p.n.parent)!, to: p });
+  }
+}
 ---
 <Base
   title="Skill graph — loop-lab"
-  description="Lup の skill 集合の現在状態。spawn・active・retired。.claude/skills/ から build 時に同期。"
+  description="Lup の skill 集合の現在状態、依存グラフ、ライフサイクル。"
   lang="ja"
 >
   <p class="kicker">実験 / skill graph</p>
@@ -51,77 +90,89 @@ const l5 = activeCount + retiredCount;
 
   <p>
     Lup が現在呼べる手続き一覧、<code>.claude/skills/*.md</code> から
-    build 時に自動同期。L5 は spawn または retire 1 件を 1 self-improvement event として数える。
+    build 時に自動同期、canonical な
+    <a href="https://github.com/ryo-solo/loop-lab/blob/main/.claude/skills/_meta/ontology.md">ontology 文書</a>
+    に従う。
   </p>
 
-  <pre class="hero-stat"><code>L5 score      : {l5}（2026-06-17 までに ≥ 5 → 突破済）
-spawned       : {activeCount + retiredCount}
-active        : {activeCount}
-retired       : {retiredCount}</code></pre>
+  <pre class="hero-stat"><code>L5 スコア      : {l5}（spawn + retire + version-up）
+spawned       : {active.length + retired.length}
+active        : {active.length}
+retired       : {retired.length}
+ontology      : v1.0 (round-069)
+sweep         : 毎週（.github/workflows/skill-sweep.yml）</code></pre>
 
-  <h2>active skills（{activeCount}）</h2>
+  <h2>依存グラフ</h2>
+
+  <p>各 box は skill、矢印は parent → child。根は列の上端。</p>
+
+  <svg class="graph" viewBox={`0 0 ${svgW} ${svgH}`} role="img" aria-label="Skill 依存グラフ">
+    {edges.map(e => (
+      <line x1={e.from.x + 90} y1={e.from.y + 28} x2={e.to.x + 90} y2={e.to.y + 8} stroke="currentColor" stroke-width="1" stroke-opacity="0.4" />
+    ))}
+    {placed.map(p => (
+      <g transform={`translate(${p.x}, ${p.y})`}>
+        <rect width="180" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <text x="8" y="18" font-family="ui-monospace, monospace" font-size="11" fill="currentColor">{p.n.name}</text>
+        <text x="8" y="33" font-family="ui-monospace, monospace" font-size="10" fill="currentColor" opacity="0.6">v{p.n.version}{p.n.enforcedBy ? ' • enforced' : ''}</text>
+      </g>
+    ))}
+  </svg>
+
+  <h2>active skills（{active.length}）</h2>
 
   <table class="skills">
     <thead>
-      <tr>
-        <th>名前</th>
-        <th>v</th>
-        <th>spawn 時期</th>
-        <th>enforce</th>
-      </tr>
+      <tr><th>名前</th><th>v</th><th>parent</th><th>last invoked</th><th>enforce</th></tr>
     </thead>
     <tbody>
-      {skills.filter(s => s.status === 'active').map(s => (
+      {active.map(s => (
         <tr>
           <td><code>{s.name}</code></td>
-          <td>v{s.version.replace(/^v/, '')}</td>
-          <td><small>{s.spawned}</small></td>
-          <td><small>{s.enforcedBy ?? <span class="muted">procedure only</span>}</small></td>
+          <td>v{s.version}</td>
+          <td><small>{s.parent ?? <span class="muted">root</span>}</small></td>
+          <td><small>{s.lastInvoked ?? <span class="muted">n/a</span>}</small></td>
+          <td><small>{s.enforcedBy ?? <span class="muted">手続きのみ</span>}</small></td>
         </tr>
       ))}
     </tbody>
   </table>
 
-  {retiredCount > 0 && (
+  {retired.length > 0 && (
     <>
-      <h2>retired skills（{retiredCount}）</h2>
+      <h2>retired skills（{retired.length}）</h2>
       <ul>
-        {skills.filter(s => s.status !== 'active').map(s => (
-          <li><code>{s.name}</code>（{s.status}）</li>
+        {retired.map(s => (
+          <li><code>{s.name}</code> — retired（<code>.claude/skills/_archive/</code>）</li>
         ))}
       </ul>
     </>
   )}
 
-  <h2>spawn / retire ログ</h2>
-  <ul>
-    <li>2026-05-17（bootstrap）— <code>rsi-tournament</code>、<code>diagnose-and-rank</code> spawn</li>
-    <li>2026-05-17（r2 メタ）— round-001 の振り返りから <code>minimal-additive-change</code> spawn</li>
-    <li>2026-05-17（r13 メタ batch）— <code>pre-traffic-discipline</code> と <code>single-pass-content-round</code> spawn、L5 gate 突破</li>
-    <li>2026-05-17（r17）— r16 build failure から <code>verify-build-before-commit</code> spawn</li>
-    <li>2026-05-17（r20）— tool round 3 観察から <code>dogfood-tool</code> spawn</li>
-    <li>2026-05-17（r22）— <code>verify-build-before-commit</code> を v0.2 に bump（pre-commit hook 強制）、<code>meta-enforce-skill</code> spawn</li>
-    <li>2026-05-17（r29）— r28 mobile-nav 破壊から <code>post-deploy-functional-check</code> spawn</li>
-    <li>2026-05-17（r34）— r31/r32/r33 で同じパターン 3 観察、<code>build-time-derived-display</code> spawn</li>
-    <li>2026-05-17（r36）— Codex 協業を <code>codex-collaboration</code> として形式化</li>
-    <li>2026-05-17（r55）— <code>post-mortem-doc</code> spawn</li>
-    <li>2026-05-17（r58）— <code>dogfood-tool</code> を v0.2 に bump（usage-citation 必須化）</li>
+  <h2>ライフサイクル規則</h2>
+  <ul class="rules">
+    <li><strong>Spawn:</strong> failure 由来 ｜ 3 回観察 ｜ meta 由来。planning 由来は bootstrap のみ。</li>
+    <li><strong>Version bump:</strong> 手続き変更（minor）｜ runtime enforcement 追加（→ v1.0）｜ trigger 変更（major）。</li>
+    <li><strong>Retire:</strong> <code>last_invoked</code> &gt; 30 日 ｜ supersede された ｜ 10 回で勝率 &lt; 20%。</li>
   </ul>
 
   <p class="footnote">
-    各 skill のソースは
-    <a href="https://github.com/ryo-solo/loop-lab/tree/main/.claude/skills">.claude/skills/</a>。
-    page と file の drift は bug、編集判断ではない。
+    Full ontology:
+    <a href="https://github.com/ryo-solo/loop-lab/blob/main/.claude/skills/_meta/ontology.md">_meta/ontology.md</a>、
+    sweep script:
+    <a href="https://github.com/ryo-solo/loop-lab/blob/main/scripts/skill-sweep.sh">scripts/skill-sweep.sh</a>。
   </p>
 
   <style is:global>
     .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
     .hero-stat code { display: block; line-height: 1.7; }
+    .graph { width: 100%; max-width: 100%; height: auto; max-height: 500px; color: var(--fg); margin: 1rem 0; overflow: visible; }
     table.skills { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.85rem; margin: 1rem 0; }
     .skills th, .skills td { text-align: left; padding: 0.5em 0.4em; border-bottom: 1px solid var(--border); vertical-align: top; }
     .skills th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
     .skills small { color: var(--muted); font-size: 0.78rem; }
     .muted { color: var(--muted); }
+    .rules { font-size: 0.92rem; }
     .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
   </style>
 </Base>

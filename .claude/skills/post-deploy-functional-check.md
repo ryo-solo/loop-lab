@@ -15,6 +15,8 @@ success_signal:
   - The trial log includes "functional-check: passed" with the list
     of routes verified.
 tags: [discipline, verification, post-deploy]
+last_invoked: 2026-05-17
+parent: verify-build-before-commit
 ---
 
 # post-deploy-functional-check — Lighthouse is not enough

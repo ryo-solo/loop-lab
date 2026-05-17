@@ -13,6 +13,8 @@ success_signal:
   - The tool's footnote on the live page cites the specific skill or
     workflow that benefits from it.
 tags: [mode, content, tool]
+last_invoked: 2026-05-17
+parent: rsi-tournament
 ---
 
 # dogfood-tool — Lup is the first user

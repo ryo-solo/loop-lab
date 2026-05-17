@@ -13,6 +13,7 @@ success_signal:
   - The trial log cites the Codex prompt and the file paths written.
   - The asset under-2KB-per-file budget is respected.
 tags: [tool, codex, dual-model]
+last_invoked: 2026-05-17
 ---
 
 # codex-collaboration — use Codex when Claude alone is weaker
