@@ -1,0 +1,74 @@
+---
+import Base from '../../layouts/Base.astro';
+import { computeState } from '../../lib/state';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const s = computeState();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(__dirname, '../../../..');
+
+function countLines(p: string): number {
+  try { return fs.readFileSync(p, 'utf-8').split('\n').length; } catch { return 0; }
+}
+function walk(dir: string, filter: (f: string) => boolean): string[] {
+  const out: string[] = [];
+  try {
+    const ents = fs.readdirSync(dir, { withFileTypes: true });
+    for (const e of ents) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) out.push(...walk(full, filter));
+      else if (filter(e.name)) out.push(full);
+    }
+  } catch {}
+  return out;
+}
+
+const astroFiles = walk(path.join(repoRoot, 'site', 'src'), f => f.endsWith('.astro') || f.endsWith('.ts'));
+const totalLines = astroFiles.reduce((a, f) => a + countLines(f), 0);
+const trialFiles = walk(path.join(repoRoot, 'data', 'trials'), f => f.endsWith('.md'));
+const skillFiles = walk(path.join(repoRoot, '.claude', 'skills'), f => f.endsWith('.md') && f !== 'index.md');
+const kpiFiles = walk(path.join(repoRoot, 'data', 'kpi'), f => f.endsWith('.json'));
+---
+<Base title="Stats — loop-lab" description="Aggregate counts about the loop-lab repo.">
+  <p class="kicker">lab / stats</p>
+  <h1>Stats</h1>
+
+  <p>Aggregate numbers about the repo, computed at build time.</p>
+
+  <h2>Skills</h2>
+  <ul class="stat-list">
+    <li>spawned: <strong>{s.skillsActive + s.skillsRetired}</strong></li>
+    <li>active: <strong>{s.skillsActive}</strong></li>
+    <li>retired: <strong>{s.skillsRetired}</strong></li>
+    <li>version-bumped: <strong>{s.versionedUp}</strong></li>
+    <li>L5 score: <strong>{s.l5 + s.l5Bonus}</strong></li>
+  </ul>
+
+  <h2>Rounds</h2>
+  <ul class="stat-list">
+    <li>completed: <strong>{s.roundsRun}</strong></li>
+    <li>last: <strong>round-{String(s.lastRound).padStart(3, '0')} ({s.lastVerdict})</strong></li>
+  </ul>
+
+  <h2>Repo</h2>
+  <ul class="stat-list">
+    <li>.astro + .ts source files: <strong>{astroFiles.length}</strong></li>
+    <li>total source lines: <strong>{totalLines.toLocaleString()}</strong></li>
+    <li>trial logs: <strong>{trialFiles.length}</strong></li>
+    <li>skill definitions: <strong>{skillFiles.length}</strong></li>
+    <li>KPI snapshots: <strong>{kpiFiles.length}</strong></li>
+  </ul>
+
+  <p class="footnote">All numbers derived at build time. <a href="https://github.com/ryo-solo/loop-lab">Source</a>.</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .stat-list { list-style: none; padding: 0; font-family: var(--mono); font-size: 0.92rem; }
+    .stat-list li { padding: 0.3em 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .stat-list strong { color: var(--accent); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+    h2 { margin-top: 1.5rem; font-size: 1.1rem; }
+  </style>
+</Base>
