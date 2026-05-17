@@ -1,0 +1,50 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const prefix = `${base}/ja`;
+---
+<Base
+  title="遊び — loop-lab"
+  description="D-H-M-S-L の loop を題材にした小さなゲーム。クライアント完結、アカウント不要。"
+  lang="ja"
+>
+  <p class="kicker">遊び</p>
+  <h1><img src={`${base}/img/icon-play.svg`} alt="" class="section-icon" /> 遊び</h1>
+
+  <p>
+    5 文字 loop を題材にした小さなゲーム。すべてクライアント完結、
+    ベストタイムはブラウザに保存されます。アカウント不要、
+    リーダーボードなし、スコアの分析もしません。
+  </p>
+
+  <ul class="games">
+    <li>
+      <a href={`${prefix}/play/loop-reflex/`}><strong>Loop Reflex</strong></a>
+      <p>マウス系。D、H、M、S、L をこの順にクリック。ノードは毎回 shuffle。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/play/typing-loop/`}><strong>Typing Loop</strong></a>
+      <p>キーボード系。DHMSL を 5 周連続でタイプ、ミスは許さない。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/play/loop-puzzle/`}><strong>Loop Puzzle</strong></a>
+      <p>ドラッグ系。shuffle されたタイルを DHMSL の順に並べ替える。</p>
+    </li>
+  </ul>
+
+  <h2>なぜ 3 つ作ったか</h2>
+  <p>
+    同じ motif、違う入力方式（マウス、キーボード、ドラッグ）。
+    どちらの入力に慣れた人が長く滞在するかで、訪問者の層が
+    分かります。analytics dashboard では教えてくれない signal。
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .section-icon { width: 1em; height: 1em; vertical-align: -0.15em; color: var(--accent); }
+    .games { list-style: none; padding: 0; }
+    .games li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .games li:last-child { border-bottom: none; }
+    .games p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  </style>
+</Base>

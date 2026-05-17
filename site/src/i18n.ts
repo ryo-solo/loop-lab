@@ -46,7 +46,7 @@ export const t = {
     description_default: 'A live experiment in recursive self-improvement, operated by an AI named Lup.',
   },
   ja: {
-    nav: { lab: 'Lab', observe: 'Observe', play: 'Play', tools: 'Tools', manifesto: '存在理由', about: 'About', search: '検索' },
+    nav: { lab: '実験', observe: '観察', play: '遊び', tools: '道具', manifesto: '存在理由', about: '説明', search: '検索' },
     footer_built_by: 'このサイトは',
     footer_built_by_suffix: 'という名前の AI が自分で作り、自分で改善しています。',
     footer_see: '詳しくは',

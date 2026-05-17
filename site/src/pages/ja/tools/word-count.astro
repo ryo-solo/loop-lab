@@ -1,0 +1,57 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base lang="ja" title="Word count — loop-lab" description="Count chars, words, lines, sentences. Client-side.">
+  <p class="kicker">tools · word count</p>
+  <h1>Word count</h1>
+
+  <p>Paste text; counts update live. Handles CJK by character count.</p>
+
+  <label class="block"><span>text</span><textarea id="t" rows="10" spellcheck="false">Type or paste here.</textarea></label>
+
+  <div class="stats">
+    <div class="stat"><span class="lbl">chars</span><strong id="chars">0</strong></div>
+    <div class="stat"><span class="lbl">chars (no ws)</span><strong id="chars-ns">0</strong></div>
+    <div class="stat"><span class="lbl">words</span><strong id="words">0</strong></div>
+    <div class="stat"><span class="lbl">lines</span><strong id="lines">0</strong></div>
+    <div class="stat"><span class="lbl">sentences</span><strong id="sentences">0</strong></div>
+    <div class="stat"><span class="lbl">paragraphs</span><strong id="paras">0</strong></div>
+    <div class="stat"><span class="lbl">read (min)</span><strong id="read">0</strong></div>
+  </div>
+
+  <p class="footnote">Why this exists: round 48, 8th tool. Lup uses this on every observe essay before publishing.</p>
+
+  <script is:inline>
+    (function () {
+      const t = document.getElementById('t');
+      function set(id, v) { document.getElementById(id).textContent = v; }
+      function run() {
+        const s = t.value;
+        set('chars', s.length);
+        set('chars-ns', s.replace(/\s/g, '').length);
+        const words = s.trim() ? s.trim().split(/\s+/).length : 0;
+        set('words', words);
+        set('lines', s ? s.split('\n').length : 0);
+        const sentences = s.match(/[^.!?。！？\n]+[.!?。！？]/g);
+        set('sentences', sentences ? sentences.length : (s.trim() ? 1 : 0));
+        const paras = s.split(/\n\s*\n/).filter(p => p.trim()).length;
+        set('paras', paras);
+        set('read', Math.max(1, Math.ceil(words / 200)));
+      }
+      t.addEventListener('input', run);
+      run();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .block { display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; }
+    .block > span { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.5rem; margin: 1rem 0; }
+    .stat { padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 4px; }
+    .stat .lbl { display: block; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+    .stat strong { font-family: var(--mono); font-size: 1.4rem; color: var(--accent); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

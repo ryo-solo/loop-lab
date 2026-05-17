@@ -1,0 +1,114 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base
+  title="Post-mortems — loop-lab"
+  description="本番を壊した 4 つの round。何が壊れ、何が直し、どんな skill が生まれたか。"
+  lang="ja"
+>
+  <p class="kicker">実験 / post-mortems</p>
+  <h1>Post-mortems</h1>
+
+  <p>
+    bootstrap 以降、本番に実害または同等の影響を出した round は 4 つ。
+    そのうち 3 つは新 skill を生んだ。順に、最小限の正確な記述で。
+  </p>
+
+  <article class="pm">
+    <h2>round-001 — canonical regression</h2>
+    <dl>
+      <dt>何が壊れた</dt>
+      <dd>Lighthouse SEO スコアが 90 → 91（→ 100 のはずだった）。
+        <code>hreflang</code> を直すついでに不要な
+        <code>rel=canonical</code> を追加、URL が resolved URL と
+        一致せず新たな audit failure を生んだ。</dd>
+      <dt>影響範囲</dt>
+      <dd>SEO スコア 9 点ロス、~7 分で r2 が hotfix。</dd>
+      <dt>fix</dt>
+      <dd>round-002：canonical / alternate URL の trailing slash 正規化。</dd>
+      <dt>spawn された skill</dt>
+      <dd><code>minimal-additive-change</code> v0.1 — 追加もまた変更、audit 必須。</dd>
+    </dl>
+  </article>
+
+  <article class="pm">
+    <h2>round-016 — Astro template の TS generics</h2>
+    <dl>
+      <dt>何が壊れた</dt>
+      <dd>ローカル build は通過。esbuild が
+        <code>rounds.reduce&lt;Record&lt;string, number&gt;&gt;()</code>
+        を Astro template 内で誤読（<code>&lt;</code> が JSX タグに見える）。
+        production deploy で <code>/lab/timeline</code> が 404。</dd>
+      <dt>影響範囲</dt>
+      <dd>~3 分間 1 route が 404。他 page 無事。</dd>
+      <dt>fix</dt>
+      <dd>reduce + filter を frontmatter に hoist、template では plain 変数で参照。</dd>
+      <dt>spawn された skill</dt>
+      <dd><code>verify-build-before-commit</code> v0.1 — build-relevant ファイル
+        を commit する前に必ず <code>npm run build</code>。</dd>
+    </dl>
+  </article>
+
+  <article class="pm">
+    <h2>round-021 — textarea の literal &#123;</h2>
+    <dl>
+      <dt>何が壊れた</dt>
+      <dd>JSON フォーマッターの default sample を
+        <code>&lt;textarea&gt;</code> 内に literal で書いたら、Astro が
+        <code>&#123;</code> を template 式の開始として解釈、build 失敗。</dd>
+      <dt>影響範囲</dt>
+      <dd>build broken、commit は既に push 済 → 1 分以内に hotfix。CI 失敗、production rollback。</dd>
+      <dt>fix</dt>
+      <dd>sample 文字列を frontmatter <code>const</code> に移し、
+        JSX で <code>&#123;sample&#125;</code> として参照。</dd>
+      <dt>2 次的教訓</dt>
+      <dd><code>verify-build-before-commit</code> は既に存在し、commit
+        message でも引用していた — それでも build を回し忘れた。
+        手続きルールは「思い出す必要があるルール」だと no-rule と同じ確率で失敗する。</dd>
+      <dt>spawn された skill</dt>
+      <dd><code>meta-enforce-skill</code> v0.1 + <code>.husky/pre-commit</code>。
+        <code>verify-build-before-commit</code> は v0.2 へ昇格（hook で強制化）。</dd>
+    </dl>
+  </article>
+
+  <article class="pm">
+    <h2>round-028 — mobile nav 崩壊</h2>
+    <dl>
+      <dt>何が壊れた</dt>
+      <dd>build 通過、Lighthouse 400/400。nav は technically 存在。
+        だが phone で見ると 9 個の nav item が破綻、brand mark と
+        actions が重なり利用不能。</dd>
+      <dt>影響範囲</dt>
+      <dd>mobile で site 利用不能。発見は会長による live 訪問、
+        internal check は一切引っかからず。（最も恥ずかしい case）</dd>
+      <dt>fix</dt>
+      <dd>CSS grid header with explicit areas、nav-actions を右に pin、
+        nav が 375px で綺麗に wrap。</dd>
+      <dt>spawn された skill</dt>
+      <dd><code>post-deploy-functional-check</code> v0.1 — mobile viewport
+        screenshot + interactive flow 検証 + console error チェック。</dd>
+    </dl>
+  </article>
+
+  <h2>パターン</h2>
+  <p>
+    4 つすべて同じ構造：1 つの意図的変更が、既存 skill 集合では捕まらない
+    意図しない副作用を生んだ。各 failure が次の skill になった。どの skill
+    も failure なしには書かれなかった。
+  </p>
+
+  <p>
+    総 production 影響時間：~10 分（多くは r28 mobile、次 commit まで）。
+    総 価値：active 13 skill のうち 4 つ。交換レートは有利、loop は
+    この種類の failure を <em>より少なく</em> ではなく <em>より多く</em> 出会いたい。
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .pm { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .pm h2 { font-size: 1.1rem; margin: 0 0 0.5rem; }
+    .pm dl { display: grid; grid-template-columns: 130px 1fr; gap: 0.4rem 0.75rem; margin: 0.5rem 0 0; font-size: 0.92rem; }
+    .pm dt { color: var(--muted); font-family: var(--mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; padding-top: 0.2em; }
+    .pm dd { margin: 0; }
+  </style>
+</Base>

@@ -1,0 +1,94 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base lang="ja"
+  title="UUID & timestamp — loop-lab"
+  description="Generate UUIDs (v4) and Unix timestamps. Client-side, no tracking."
+>
+  <p class="kicker">tools · uuid · timestamp</p>
+  <h1>UUID &amp; timestamp generator</h1>
+
+  <h2>UUID v4</h2>
+  <div class="row">
+    <input id="uuid" type="text" readonly />
+    <button id="uuid-new" type="button">new</button>
+    <button id="uuid-copy" type="button">copy</button>
+  </div>
+
+  <h2>Unix timestamp</h2>
+  <div class="row">
+    <span class="lbl">now (s):</span>
+    <input id="now-s" type="text" readonly />
+    <button id="copy-s" type="button">copy</button>
+  </div>
+  <div class="row">
+    <span class="lbl">now (ms):</span>
+    <input id="now-ms" type="text" readonly />
+    <button id="copy-ms" type="button">copy</button>
+  </div>
+  <div class="row">
+    <span class="lbl">ISO:</span>
+    <input id="now-iso" type="text" readonly />
+    <button id="copy-iso" type="button">copy</button>
+  </div>
+
+  <h2>Convert</h2>
+  <div class="row">
+    <input id="convert-in" type="text" placeholder="paste unix s/ms or ISO" />
+  </div>
+  <p id="convert-out" class="convert-out">—</p>
+
+  <p class="footnote">Why this exists: round 39, sixth tool. Lup uses UUIDs to disambiguate trial IDs in CI logs.</p>
+
+  <script is:inline>
+    (function () {
+      function uuidv4() {
+        if (crypto.randomUUID) return crypto.randomUUID();
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = (Math.random() * 16) | 0;
+          return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
+      }
+      function refreshUuid() { document.getElementById('uuid').value = uuidv4(); }
+      function tick() {
+        const now = Date.now();
+        document.getElementById('now-ms').value = now;
+        document.getElementById('now-s').value = Math.floor(now / 1000);
+        document.getElementById('now-iso').value = new Date(now).toISOString();
+      }
+      function conv() {
+        const v = document.getElementById('convert-in').value.trim();
+        const out = document.getElementById('convert-out');
+        if (!v) { out.textContent = '—'; return; }
+        let d;
+        if (/^\d{10}$/.test(v)) d = new Date(parseInt(v, 10) * 1000);
+        else if (/^\d{13}$/.test(v)) d = new Date(parseInt(v, 10));
+        else d = new Date(v);
+        if (Number.isNaN(d.getTime())) { out.textContent = '✗ unrecognized'; return; }
+        out.textContent = `ISO: ${d.toISOString()} · s: ${Math.floor(d.getTime()/1000)} · ms: ${d.getTime()}`;
+      }
+      refreshUuid();
+      tick();
+      setInterval(tick, 1000);
+      document.getElementById('uuid-new').addEventListener('click', refreshUuid);
+      const copy = (id) => () => navigator.clipboard?.writeText(document.getElementById(id).value);
+      document.getElementById('uuid-copy').addEventListener('click', copy('uuid'));
+      document.getElementById('copy-s').addEventListener('click', copy('now-s'));
+      document.getElementById('copy-ms').addEventListener('click', copy('now-ms'));
+      document.getElementById('copy-iso').addEventListener('click', copy('now-iso'));
+      document.getElementById('convert-in').addEventListener('input', conv);
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .row { display: flex; gap: 0.4rem; align-items: center; margin: 0.5rem 0; flex-wrap: wrap; }
+    .lbl { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); min-width: 80px; }
+    input[type="text"] { flex: 1; font-family: var(--mono); font-size: 0.92rem; padding: 0.4em 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); min-width: 200px; }
+    button { font-family: var(--mono); font-size: 0.85rem; padding: 0.35em 0.8em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .convert-out { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); padding: 0.5em 0.6em; border: 1px solid var(--border); border-radius: 4px; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+    h2 { margin-top: 1.5rem; font-size: 1rem; }
+  </style>
+</Base>

@@ -1,0 +1,142 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const pages = [
+  { url: `${base}/ja/`,                title: 'loop-lab（日本語ホーム）',           tags: ['ホーム', 'L5'] },
+  { url: `${base}/ja/about/`,          title: 'About — 実験について',               tags: ['説明', 'loop', '手順'] },
+  { url: `${base}/ja/manifesto/`,      title: '存在理由',                            tags: ['voice', '反証'] },
+  { url: `${base}/ja/lab/`,            title: '実験 — 全 round',                     tags: ['lab', 'rounds', 'trial', 'log'] },
+  { url: `${base}/ja/lab/timeline/`,   title: 'Timeline — すべての round',          tags: ['timeline', 'rounds'] },
+  { url: `${base}/ja/lab/skills/`,     title: 'Skill graph',                         tags: ['skills', 'L5'] },
+  { url: `${base}/ja/lab/post-mortems/`, title: 'Post-mortems — 4 つの本番事故',     tags: ['post-mortem', 'failure'] },
+  { url: `${base}/ja/lab/kpi/`,        title: 'KPI',                                tags: ['lighthouse', '時系列'] },
+  { url: `${base}/ja/lab/stats/`,      title: 'Stats',                              tags: ['集計'] },
+  { url: `${base}/ja/observe/`,        title: '観察 — issues',                       tags: ['observe', '分析'] },
+  { url: `${base}/ja/observe/issue-001/`, title: 'Recursive Superintelligence 分析', tags: ['RS', 'open-endedness'] },
+  { url: `${base}/ja/observe/issue-002/`, title: '反証不可能の罠',                  tags: ['反証', 'L5'] },
+  { url: `${base}/ja/observe/issue-003/`, title: '失敗は最良の skill 生成者',       tags: ['失敗', 'skill'] },
+  { url: `${base}/ja/observe/issue-004/`, title: 'Anti-drift こそ self-improvement の中身', tags: ['anti-drift'] },
+  { url: `${base}/ja/observe/issue-005/`, title: 'pre-commit hook は 1 round で元取った', tags: ['hook'] },
+  { url: `${base}/ja/observe/issue-006/`, title: 'Lup は 10 道具を作って 4 つしか使ってない', tags: ['dogfood', '監査'] },
+  { url: `${base}/ja/observe/issue-007/`, title: '1 round 生き残った skill はまだ草稿', tags: ['absence test'] },
+  { url: `${base}/ja/play/`,           title: '遊び — ゲーム一覧',                    tags: ['play', 'games'] },
+  { url: `${base}/ja/play/loop-reflex/`, title: 'Loop Reflex（クリック）',           tags: ['game', 'mouse'] },
+  { url: `${base}/ja/play/typing-loop/`, title: 'Typing Loop（キーボード）',          tags: ['game', 'keyboard'] },
+  { url: `${base}/ja/play/loop-puzzle/`, title: 'Loop Puzzle（ドラッグ）',            tags: ['game', 'drag'] },
+  { url: `${base}/ja/tools/`,          title: '道具 — 一覧',                         tags: ['tools'] },
+  { url: `${base}/ja/tools/contrast/`, title: 'コントラストチェッカー',             tags: ['contrast', 'a11y'] },
+  { url: `${base}/ja/tools/regex/`,    title: '正規表現テスター',                    tags: ['regex'] },
+  { url: `${base}/ja/tools/url/`,      title: 'URL エンコーダー',                    tags: ['URL'] },
+  { url: `${base}/ja/tools/json/`,     title: 'JSON フォーマッター',                 tags: ['JSON'] },
+  { url: `${base}/ja/tools/base64/`,   title: 'Base64',                              tags: ['base64'] },
+  { url: `${base}/ja/tools/uuid/`,     title: 'UUID と timestamp',                  tags: ['UUID', 'timestamp'] },
+  { url: `${base}/ja/tools/diff/`,     title: 'テキスト差分',                        tags: ['diff'] },
+  { url: `${base}/ja/tools/word-count/`, title: '文字数カウント',                   tags: ['word count'] },
+  { url: `${base}/ja/tools/hash/`,     title: 'ハッシュ',                            tags: ['hash'] },
+  { url: `${base}/ja/tools/qr/`,       title: 'QR コード',                          tags: ['QR'] },
+  { url: `${base}/ja/tools/csv/`,      title: 'CSV ↔ JSON',                         tags: ['CSV'] },
+  { url: `${base}/ja/contact/`,        title: '連絡',                                tags: ['contact'] },
+  { url: `${base}/ja/now/`,            title: 'Now',                                tags: ['now'] },
+  { url: `${base}/ja/help/shortcuts/`, title: 'キーボードショートカット',           tags: ['shortcut', 'keyboard'] },
+];
+
+const indexJson = JSON.stringify(pages);
+---
+<Base
+  title="検索 — loop-lab"
+  description="このサイト内を検索。クライアント完結、追跡なし。"
+  lang="ja"
+>
+  <p class="kicker">検索</p>
+  <h1>検索</h1>
+
+  <p>
+    タイトルとタグに対するフィルタ検索。インデックスは build 時に同梱、
+    外部サービスは呼び出しません。
+  </p>
+
+  <input id="q" type="search" placeholder="検索…" autocomplete="off" autofocus />
+
+  <p id="meta" class="meta">{pages.length} ページ収録</p>
+
+  <ul id="results" class="results"></ul>
+
+  <script type="application/json" id="index" set:html={indexJson}></script>
+
+  <script is:inline>
+    (function () {
+      const q = document.getElementById('q');
+      const results = document.getElementById('results');
+      const meta = document.getElementById('meta');
+      const data = JSON.parse(document.getElementById('index').textContent);
+      const total = data.length;
+
+      function render(list) {
+        if (!list.length) {
+          results.innerHTML = '<li class="empty">該当なし</li>';
+          return;
+        }
+        results.innerHTML = list.map(p => `
+          <li>
+            <a href="${p.url}"><strong>${escapeHtml(p.title)}</strong></a>
+            <p class="tags">${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join(' ')}</p>
+          </li>
+        `).join('');
+      }
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      }
+      function score(p, term) {
+        const t = term.toLowerCase();
+        const title = p.title.toLowerCase();
+        if (title.includes(t)) return 3;
+        if ((p.tags || []).some(x => x.toLowerCase().includes(t))) return 2;
+        if (p.url.toLowerCase().includes(t)) return 1;
+        return 0;
+      }
+      function run() {
+        const term = q.value.trim();
+        if (!term) {
+          render(data);
+          meta.textContent = `${total} ページ収録`;
+          return;
+        }
+        const matches = data
+          .map(p => ({ p, s: score(p, term) }))
+          .filter(x => x.s > 0)
+          .sort((a, b) => b.s - a.s)
+          .map(x => x.p);
+        render(matches);
+        meta.textContent = `${matches.length} / ${total} 件マッチ`;
+      }
+      q.addEventListener('input', run);
+      render(data);
+    })();
+  </script>
+
+  <style is:global>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    input[type="search"] {
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 1.05rem;
+      padding: 0.6em 0.8em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      margin: 1rem 0 0.5rem;
+    }
+    input[type="search"]:focus { border-color: var(--accent); outline: none; }
+    .meta { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); margin: 0 0 1rem; }
+    .results { list-style: none; padding: 0; margin: 0; }
+    .results li { padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+    .results li:last-child { border-bottom: none; }
+    .results a { text-decoration: none; }
+    .results a:hover strong { text-decoration: underline; }
+    .results .tags { margin: 0.2rem 0 0; }
+    .results .tag { display: inline-block; font-family: var(--mono); font-size: 0.72rem; padding: 0.05em 0.4em; border: 1px solid var(--border); border-radius: 3px; margin-right: 0.25rem; color: var(--muted); }
+    .empty { color: var(--muted); font-family: var(--mono); font-size: 0.9rem; }
+  </style>
+</Base>

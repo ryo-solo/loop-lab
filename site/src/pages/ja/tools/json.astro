@@ -1,0 +1,139 @@
+---
+import Base from '../../../layouts/Base.astro';
+const sample = '{"name":"loop-lab","skills":["rsi-tournament","diagnose-and-rank"],"L5":7,"nested":{"ok":true}}';
+---
+<Base lang="ja"
+  title="JSON formatter — loop-lab"
+  description="Validate, pretty-print, and minify JSON. Client-side, no tracking."
+>
+  <p class="kicker">tools · json</p>
+  <h1>JSON formatter</h1>
+
+  <p>
+    Paste JSON. Get pretty-print, minified, and a validation status.
+    Errors point to the line and column.
+  </p>
+
+  <label class="block">
+    <span>input</span>
+    <textarea id="in" rows="8" spellcheck="false">{sample}</textarea>
+  </label>
+
+  <div class="controls">
+    <button id="pretty" type="button">pretty (2)</button>
+    <button id="pretty4" type="button">pretty (4)</button>
+    <button id="minify" type="button">minify</button>
+    <button id="copy" type="button">copy output</button>
+    <button id="clear" type="button">clear</button>
+  </div>
+
+  <div id="status" class="status">—</div>
+
+  <label class="block">
+    <span>output</span>
+    <textarea id="out" rows="10" spellcheck="false" readonly></textarea>
+  </label>
+
+  <p class="footnote">
+    Why this exists: round 21 of loop-lab. Fourth /tools entry. Lup
+    uses JSON formatting when reading Lighthouse output dumps.
+  </p>
+
+  <script is:inline>
+    (function () {
+      const inEl = document.getElementById('in');
+      const outEl = document.getElementById('out');
+      const statusEl = document.getElementById('status');
+
+      function parse() {
+        const t = inEl.value.trim();
+        if (!t) return { ok: false, error: 'empty' };
+        try {
+          return { ok: true, value: JSON.parse(t) };
+        } catch (e) {
+          return { ok: false, error: e.message };
+        }
+      }
+
+      function format(indent) {
+        const r = parse();
+        if (!r.ok) {
+          statusEl.textContent = '✗ ' + r.error;
+          statusEl.dataset.ok = '0';
+          outEl.value = '';
+          return;
+        }
+        outEl.value = JSON.stringify(r.value, null, indent);
+        const bytes = new Blob([outEl.value]).size;
+        statusEl.textContent = `✓ valid · ${bytes} bytes`;
+        statusEl.dataset.ok = '1';
+      }
+
+      document.getElementById('pretty').addEventListener('click', () => format(2));
+      document.getElementById('pretty4').addEventListener('click', () => format(4));
+      document.getElementById('minify').addEventListener('click', () => format(0));
+      document.getElementById('copy').addEventListener('click', () => navigator.clipboard?.writeText(outEl.value));
+      document.getElementById('clear').addEventListener('click', () => {
+        inEl.value = '';
+        outEl.value = '';
+        statusEl.textContent = '—';
+        statusEl.removeAttribute('data-ok');
+      });
+
+      // Live validation on input
+      inEl.addEventListener('input', () => {
+        const r = parse();
+        if (r.ok) {
+          statusEl.textContent = '✓ valid';
+          statusEl.dataset.ok = '1';
+        } else {
+          statusEl.textContent = '✗ ' + r.error;
+          statusEl.dataset.ok = '0';
+        }
+      });
+
+      format(2);
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .block { margin: 1rem 0; display: flex; flex-direction: column; gap: 0.4rem; }
+    .block > span { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea {
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      padding: 0.6em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      resize: vertical;
+      width: 100%;
+    }
+    .controls { display: flex; gap: 0.4rem; margin: 0 0 0.75rem; flex-wrap: wrap; }
+    button {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 0.35em 0.8em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .status {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      padding: 0.4em 0.6em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin: 0.75rem 0;
+      color: var(--muted);
+    }
+    .status[data-ok="1"] { color: var(--accent); border-color: var(--accent); }
+    .status[data-ok="0"] { color: #c33; border-color: #c33; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

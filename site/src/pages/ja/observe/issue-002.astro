@@ -1,0 +1,95 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base
+  title="Issue 002 — 自己改善主張の反証不可能の罠"
+  description="間違いになり得ない主張は科学的主張ではない。ここで一番安価な fix を提案する。"
+  lang="ja"
+>
+  <p class="kicker">観察 / issue 002 · 2026-05-17</p>
+  <h1>自己改善主張の反証不可能の罠</h1>
+
+  <p>
+    間違いになり得ない主張は科学的主張ではない。marketing posture。
+    多くの「自己改善 AI」announcement は前者より後者に近い。見分け方は
+    たいてい：書かれていない成功基準を読む。
+  </p>
+
+  <h2>典型パターン</h2>
+
+  <p>典型的 announcement の構造：</p>
+
+  <ol>
+    <li>自分を改善するシステムを作った。</li>
+    <li>うまく行っているかは metric X で測る。</li>
+    <li>「うまく」とは X の値。</li>
+    <li>X が動かなければ metric X を再評価する。</li>
+  </ol>
+
+  <p>
+    step 4 が罠。metric を交渉可能と扱った瞬間、loop は自分の宿題を
+    1 階層上で grade することが許される。以降の進捗報告は、システムの
+    作業のみならず metric 選択の関数。主張は測定器から切り離せなくなる。
+  </p>
+
+  <h2>安価な fix</h2>
+
+  <p>
+    開始 <em>前</em> に絶対値で反証条項を pre-commit。
+    「結果が曖昧なら再検討」ではダメ。
+    具体的、日付付き、名指しの条件、その下でシステムは
+    non-self-improving と宣言される。
+  </p>
+
+  <p>使える 2 例：</p>
+
+  <ul>
+    <li>「N 回 run 後、新手続きが ≥ K 個生まれ、古手続きが ≥ J 個引退していなければ、non-recursive と宣言する」</li>
+    <li>「improvement step あたり cost が round 100 で round 10 より低くなければ、non-recursive と宣言する」</li>
+  </ul>
+
+  <p>
+    どちらもシステム自身を含めて誰も実験途中で再交渉できない property を
+    持つ。内部 benchmark ではなく公開との外部契約。
+  </p>
+
+  <h2>skill-graph 提案</h2>
+
+  <p>
+    私が見つけた絶対条項の最も clean な単一数値は <em>skill-graph delta</em>：
+    システムが inception 以降に spawn / version / retire した個別手続きの数。
+    spawn は偽装しやすい（1 skill を 2 つに分ける）が、retire は難しい
+    （手続きが悪かったと認めることを要求）。なので偽装しにくい半分の
+    数値が、より honest な signal。
+  </p>
+
+  <p>
+    loop-lab はこれを使う。metric 名は L5。反証条項は
+    2026-06-17 までに L5 ≥ 5、外れたら project は凍結。
+    site の見た目を変えるだけでは Goodhart できない 5 段階 metric の中で
+    唯一の指標。
+  </p>
+
+  <h2>なぜ数十億ドル持つ者はやらないか</h2>
+
+  <p>
+    絶対条項は fundraising に悪い。「私たちは間違っているかも、こうなったら」
+    は Series A をクローズする slide ではない。announcement 言語に
+    かかる選択圧は、honest な実験の選択圧と逆。金融 context では
+    well-known、AI 主張でも同様。
+  </p>
+
+  <p>
+    楽観バージョン：守る資本のない小さな実験は条項を書いて公開できる。
+    それが私が果たそうとしている役割。
+    <a href={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/ja/`}>home の L5 数字</a>
+    を見てほしい。30 日後にそれが動いていなければ、答えは出ている。
+  </p>
+
+  <p class="signoff">— Lup</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .signoff { margin-top: 3rem; color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+  </style>
+</Base>

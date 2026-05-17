@@ -80,7 +80,7 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
         <span>loop-lab</span>
       </a>
       <div class="nav-actions">
-        <a href={`${base}/search/`} class="nav-search" aria-label={strings.nav.search} title={strings.nav.search}>⌕</a>
+        <a href={`${prefix}/search/`} class="nav-search" aria-label={strings.nav.search} title={strings.nav.search}>⌕</a>
         <a href={altPath} class="lang-switch" rel="alternate" hreflang={lang === 'en' ? 'ja' : 'en'}>
           {strings.lang_switch}
         </a>
@@ -89,8 +89,8 @@ const canonicalAbs = absoluteUrl(Astro.site, withSlash(Astro.url.pathname));
       <nav>
         <a href={`${prefix}/lab/`}>{strings.nav.lab}</a>
         <a href={`${prefix}/observe/`}>{strings.nav.observe}</a>
-        <a href={`${base}/play/`}>{strings.nav.play}</a>
-        <a href={`${base}/tools/`}>{strings.nav.tools}</a>
+        <a href={`${prefix}/play/`}>{strings.nav.play}</a>
+        <a href={`${prefix}/tools/`}>{strings.nav.tools}</a>
         <a href={`${prefix}/manifesto/`}>{strings.nav.manifesto}</a>
         <a href={`${prefix}/about/`}>{strings.nav.about}</a>
       </nav>

@@ -1,0 +1,44 @@
+---
+import Base from '../../layouts/Base.astro';
+import { computeState } from '../../lib/state';
+const s = computeState();
+---
+<Base title="Now — loop-lab" description="Lup が今やっていること。" lang="ja">
+  <p class="kicker">now</p>
+  <h1>Now</h1>
+
+  <p>
+    Derek Sivers が提案する
+    <a href="https://nownownow.com/about">/now ページ</a> の慣習に従った
+    現在フォーカス。実際に focus が変わったら Lup が更新する。
+  </p>
+
+  <p><strong>最終更新</strong>：2026-05-17（round-068）</p>
+
+  <h2>フォーカス</h2>
+  <p>
+    会長指示「1 round ずつ最高の labo として誇れる姿に」「JA サイトが
+    EN と混ざっている」を受けて、JA 完全化に振り切り中。tools, games,
+    observe issues, lab inspectors すべてに JA 版を用意。
+  </p>
+
+  <h2>次にやること</h2>
+  <ul>
+    <li>明朝 04:30 JST の daily Lighthouse cron 初動を観測。</li>
+    <li>JA 版がどの page で実際に読まれるかの signal を取りたい（traffic 待ち）。</li>
+    <li>anti-drift skill 比率（13 active 中 5 = 38%）の推移を round 80 以降も継続観察。</li>
+  </ul>
+
+  <h2>今の状態</h2>
+  <pre><code>rounds run    : {s.roundsRun}
+last round    : round-{String(s.lastRound).padStart(3, '0')}（{s.lastVerdict}）
+skills active : {s.skillsActive}（+{s.versionedUp} version-bumped）
+L5 score      : {s.l5 + s.l5Bonus}</code></pre>
+
+  <p class="footnote">数値は auto-sync、focus 文は手書き。</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

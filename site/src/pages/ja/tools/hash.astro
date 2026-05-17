@@ -1,0 +1,56 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base lang="ja" title="Hash — loop-lab" description="Compute SHA-1, SHA-256, SHA-384, SHA-512 of text. Client-side via SubtleCrypto.">
+  <p class="kicker">tools · hash</p>
+  <h1>Hash</h1>
+
+  <p>Compute cryptographic hashes via the browser's SubtleCrypto. Plain text in, hex out.</p>
+
+  <label class="block"><span>input</span><textarea id="in" rows="5" spellcheck="false">loop-lab round 49</textarea></label>
+
+  <div class="grid">
+    <div class="row"><span class="lbl">SHA-1</span><code id="sha1">—</code></div>
+    <div class="row"><span class="lbl">SHA-256</span><code id="sha256">—</code></div>
+    <div class="row"><span class="lbl">SHA-384</span><code id="sha384">—</code></div>
+    <div class="row"><span class="lbl">SHA-512</span><code id="sha512">—</code></div>
+  </div>
+
+  <p class="footnote">Why this exists: round 49, 9th tool. Lup uses SHA-256 for trial fingerprinting and asset integrity.</p>
+
+  <script is:inline>
+    (function () {
+      const inEl = document.getElementById('in');
+      const algs = [['sha1', 'SHA-1'], ['sha256', 'SHA-256'], ['sha384', 'SHA-384'], ['sha512', 'SHA-512']];
+      async function digest(algo, str) {
+        const buf = new TextEncoder().encode(str);
+        const h = await crypto.subtle.digest(algo, buf);
+        return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+      async function run() {
+        const text = inEl.value;
+        for (const [id, algo] of algs) {
+          try {
+            document.getElementById(id).textContent = await digest(algo, text);
+          } catch (e) {
+            document.getElementById(id).textContent = '(error: ' + e.message + ')';
+          }
+        }
+      }
+      inEl.addEventListener('input', run);
+      run();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .block { display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; }
+    .block > span { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
+    textarea { font-family: var(--mono); font-size: 0.92rem; padding: 0.6em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); resize: vertical; width: 100%; }
+    .grid { display: grid; gap: 0.5rem; margin: 1rem 0; }
+    .row { display: grid; grid-template-columns: 90px 1fr; gap: 0.5rem; align-items: baseline; padding: 0.4em 0; border-bottom: 1px solid var(--border); }
+    .lbl { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    code { font-family: var(--mono); font-size: 0.82rem; word-break: break-all; padding: 0.1em 0.3em; background: rgba(127,127,127,0.06); border-radius: 3px; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

@@ -1,0 +1,162 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base lang="ja"
+  title="Regex tester — loop-lab"
+  description="Test a JavaScript regex against sample text. Highlights matches and capture groups. Client-side, no tracking."
+>
+  <p class="kicker">tools · regex</p>
+  <h1>Regex tester</h1>
+
+  <p>
+    Type a JavaScript-flavored regex and sample text. Matches are
+    highlighted; capture groups are listed below. Everything runs in
+    your browser.
+  </p>
+
+  <div class="grid">
+    <label class="pattern">
+      <span>pattern</span>
+      <div class="row">
+        <span class="slash">/</span>
+        <input id="pat" type="text" value="(\\w+)@(\\w+\\.\\w+)" autocomplete="off" spellcheck="false" />
+        <span class="slash">/</span>
+        <input id="flags" type="text" value="g" autocomplete="off" spellcheck="false" maxlength="6" aria-label="flags" />
+      </div>
+    </label>
+  </div>
+
+  <label class="block">
+    <span>text</span>
+    <textarea id="text" rows="6" spellcheck="false">Contact alice@example.com or bob@test.org for details. Also try carol@loop-lab.dev.</textarea>
+  </label>
+
+  <div id="error" class="error" hidden></div>
+
+  <h2>Highlighted</h2>
+  <div id="hl" class="hl" aria-live="polite"></div>
+
+  <h2>Matches</h2>
+  <div id="matches" class="matches">—</div>
+
+  <p class="footnote">
+    Why this exists: round 9 of loop-lab. Lup uses regex inside the
+    diagnose-and-rank skill; this tool is the dogfood version.
+  </p>
+
+  <script is:inline>
+    (function () {
+      const pat = document.getElementById('pat');
+      const flags = document.getElementById('flags');
+      const text = document.getElementById('text');
+      const hl = document.getElementById('hl');
+      const matches = document.getElementById('matches');
+      const error = document.getElementById('error');
+
+      function escape(s) {
+        return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+      }
+
+      function run() {
+        error.hidden = true;
+        error.textContent = '';
+        let re;
+        try {
+          // Ensure 'g' flag so we get every match
+          let f = flags.value.replace(/[^gimsuy]/g, '');
+          if (!f.includes('g')) f += 'g';
+          re = new RegExp(pat.value, f);
+        } catch (e) {
+          error.textContent = 'Invalid pattern: ' + e.message;
+          error.hidden = false;
+          hl.innerHTML = escape(text.value);
+          matches.textContent = '—';
+          return;
+        }
+
+        const t = text.value;
+        let html = '';
+        let lastIdx = 0;
+        const list = [];
+        let m;
+        let safety = 0;
+        while ((m = re.exec(t)) !== null) {
+          if (m.index === re.lastIndex) re.lastIndex++; // avoid zero-width infinite
+          html += escape(t.slice(lastIdx, m.index));
+          html += '<mark>' + escape(m[0]) + '</mark>';
+          lastIdx = m.index + m[0].length;
+          list.push({ idx: m.index, full: m[0], groups: m.slice(1) });
+          if (++safety > 10000) break;
+        }
+        html += escape(t.slice(lastIdx));
+        hl.innerHTML = html;
+
+        if (list.length === 0) {
+          matches.textContent = 'no matches';
+          return;
+        }
+        matches.innerHTML = list.map((mt, i) => {
+          const groupRows = mt.groups.map((g, gi) => `<li><span class="g">$${gi+1}</span> <code>${escape(g ?? '')}</code></li>`).join('');
+          return `
+            <div class="match">
+              <div class="m-head"><span class="ix">#${i+1}</span> at index ${mt.idx} — <code>${escape(mt.full)}</code></div>
+              ${groupRows ? `<ul class="groups">${groupRows}</ul>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      [pat, flags, text].forEach(el => el.addEventListener('input', run));
+      run();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .grid, .block { margin: 1rem 0; }
+    label > span { display: block; font-family: var(--mono); font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .pattern .row { display: flex; align-items: center; gap: 0.3rem; border: 1px solid var(--border); border-radius: 4px; padding: 0.3em 0.5em; }
+    .pattern .slash { font-family: var(--mono); color: var(--muted); }
+    .pattern input { border: none; background: transparent; font-family: var(--mono); font-size: 0.95rem; color: var(--fg); padding: 0.2em; outline: none; }
+    .pattern input:focus { color: var(--accent); }
+    .pattern input#pat { flex: 1; }
+    .pattern input#flags { width: 60px; text-align: center; }
+    textarea {
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      padding: 0.6em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--fg);
+      resize: vertical;
+    }
+    .error {
+      padding: 0.6em;
+      border: 1px solid #c33;
+      color: #c33;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+    .hl {
+      padding: 0.75em;
+      background: rgba(127,127,127,0.06);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.92rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .hl mark { background: rgba(0,102,204,0.18); color: var(--fg); padding: 0 1px; border-radius: 2px; }
+    .matches { font-family: var(--mono); font-size: 0.9rem; }
+    .match { border-left: 3px solid var(--border); padding: 0.5em 0.75em; margin: 0.5em 0; }
+    .match .ix { color: var(--muted); }
+    .groups { list-style: none; padding: 0.25em 0 0; margin: 0.25em 0 0; }
+    .groups li { padding: 0.1em 0; }
+    .groups .g { color: var(--muted); font-size: 0.8rem; padding-right: 0.4em; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

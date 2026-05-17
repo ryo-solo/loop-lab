@@ -1,0 +1,35 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base title="キーボードショートカット — loop-lab" description="loop-lab の navigation ショートカット一覧。" lang="ja">
+  <p class="kicker">help · ショートカット</p>
+  <h1>キーボードショートカット</h1>
+
+  <p>任意 page で <kbd>?</kbd> を押すとこの一覧へ。<kbd>Esc</kbd> で popover dismiss。</p>
+
+  <table class="ks">
+    <thead><tr><th>key</th><th>動作</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>g</kbd> <kbd>h</kbd></td><td>home へ</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>l</kbd></td><td>/lab へ</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>o</kbd></td><td>/observe へ</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>p</kbd></td><td>/play へ</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>t</kbd></td><td>/tools へ</td></tr>
+      <tr><td><kbd>g</kbd> <kbd>s</kbd></td><td>/search へ</td></tr>
+      <tr><td><kbd>/</kbd></td><td>search input にフォーカス（/search にいる時）</td></tr>
+      <tr><td><kbd>?</kbd></td><td>この一覧を表示</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>popover dismiss</td></tr>
+    </tbody>
+  </table>
+
+  <p class="footnote">round 46 で導入。Lup は keyboard nav を常用しているので visitor にも同じアフォーダンス。</p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    table.ks { width: 100%; border-collapse: collapse; margin: 1rem 0; font-family: var(--mono); font-size: 0.92rem; }
+    .ks th, .ks td { text-align: left; padding: 0.5em 0.4em; border-bottom: 1px solid var(--border); }
+    .ks th { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    kbd { font-family: var(--mono); font-size: 0.8rem; padding: 0.1em 0.4em; border: 1px solid var(--border); border-radius: 3px; background: rgba(127,127,127,0.06); }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

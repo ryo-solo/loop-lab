@@ -1,0 +1,163 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+<Base
+  title="Typing Loop — 5 文字タイピングテスト"
+  description="DHMSL を 5 周連続でできるだけ速くタイプ。loop-lab の 2 つ目のゲーム。"
+  lang="ja"
+>
+  <p class="kicker">遊び · typing loop</p>
+  <h1>Typing Loop</h1>
+
+  <p>
+    <code>D H M S L</code> をこの順に、5 周連続でタイプ。合計 25 キー。
+    ミスタイプで cycle カウンターが reset。
+    最初の 1 打までタイマーは動かない。
+  </p>
+
+  <div id="game" class="game">
+    <div class="hud">
+      <div><span class="lbl">target:</span> <code id="target">D</code></div>
+      <div><span class="lbl">cycle:</span> <span id="cycle">0</span> / 5</div>
+      <div><span class="lbl">time:</span> <span id="time">0.00</span>s</div>
+      <div><span class="lbl">best:</span> <span id="best">—</span>s</div>
+    </div>
+
+    <div class="track" aria-hidden="true">
+      <span class="slot" data-i="0">D</span>
+      <span class="slot" data-i="1">H</span>
+      <span class="slot" data-i="2">M</span>
+      <span class="slot" data-i="3">S</span>
+      <span class="slot" data-i="4">L</span>
+    </div>
+
+    <div class="counter" aria-hidden="true">
+      <span class="dot" data-c="0"></span>
+      <span class="dot" data-c="1"></span>
+      <span class="dot" data-c="2"></span>
+      <span class="dot" data-c="3"></span>
+      <span class="dot" data-c="4"></span>
+    </div>
+
+    <p class="hint">クリックでフォーカス、そしてタイプ — D, H, M, S, L</p>
+    <input id="input" type="text" autocomplete="off" spellcheck="false" aria-label="game input" />
+
+    <div class="controls">
+      <button id="reset" type="button">reset best</button>
+    </div>
+
+    <p id="result" class="result" hidden></p>
+  </div>
+
+  <p class="footnote">
+    なぜこれが存在するか：loop-lab round 12。2 つ目のゲーム、入力 modality が違う
+    （マウスではなくキーボード）。engagement signal：keyboard 派は滞在、mouse のみは離脱。
+    これが Lup に audience を教える。
+  </p>
+
+  <script is:inline>
+    (function () {
+      const TARGETS = ['D', 'H', 'M', 'S', 'L'];
+      const CYCLES = 5;
+      const STORAGE_KEY = 'loop-lab.typing-loop.best';
+
+      const input = document.getElementById('input');
+      const targetEl = document.getElementById('target');
+      const cycleEl = document.getElementById('cycle');
+      const timeEl = document.getElementById('time');
+      const bestEl = document.getElementById('best');
+      const resultEl = document.getElementById('result');
+      const resetBtn = document.getElementById('reset');
+      const slots = document.querySelectorAll('.slot');
+      const dots = document.querySelectorAll('.dot');
+
+      let position = 0;
+      let cycle = 0;
+      let startTime = 0;
+      let timer = null;
+      let state = 'idle';
+
+      function loadBest() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const n = raw ? parseFloat(raw) : NaN;
+        bestEl.textContent = Number.isFinite(n) ? n.toFixed(2) : '—';
+      }
+      function highlight() {
+        slots.forEach(s => s.classList.toggle('active', +s.dataset.i === position));
+        dots.forEach(d => d.classList.toggle('done', +d.dataset.c < cycle));
+        targetEl.textContent = TARGETS[position];
+        cycleEl.textContent = String(cycle);
+      }
+      function tick() {
+        if (state !== 'playing') return;
+        timeEl.textContent = ((performance.now() - startTime) / 1000).toFixed(2);
+        timer = requestAnimationFrame(tick);
+      }
+      function start() {
+        position = 0; cycle = 0; state = 'playing'; startTime = performance.now();
+        resultEl.hidden = true; highlight(); timer = requestAnimationFrame(tick);
+      }
+      function finish() {
+        state = 'done'; cancelAnimationFrame(timer);
+        const t = (performance.now() - startTime) / 1000;
+        timeEl.textContent = t.toFixed(2);
+        const prev = parseFloat(localStorage.getItem(STORAGE_KEY) || 'NaN');
+        if (!Number.isFinite(prev) || t < prev) {
+          localStorage.setItem(STORAGE_KEY, t.toFixed(2));
+          loadBest();
+          resultEl.innerHTML = `<strong>${t.toFixed(2)}s</strong> でクリア — 新記録`;
+        } else {
+          resultEl.innerHTML = `<strong>${t.toFixed(2)}s</strong> でクリア（ベスト ${prev.toFixed(2)}s）`;
+        }
+        resultEl.hidden = false;
+      }
+      function reset() { position = 0; cycle = 0; state = 'idle'; cancelAnimationFrame(timer); timeEl.textContent = '0.00'; highlight(); }
+      input.addEventListener('keydown', e => {
+        if (e.key.length !== 1) return;
+        const ch = e.key.toUpperCase();
+        e.preventDefault();
+        if (state === 'idle') start();
+        if (state === 'done') { reset(); start(); }
+        if (state !== 'playing') return;
+        if (ch === TARGETS[position]) {
+          position++;
+          if (position >= TARGETS.length) {
+            position = 0; cycle++;
+            if (cycle >= CYCLES) { highlight(); finish(); return; }
+          }
+          highlight();
+        } else {
+          position = 0;
+          slots.forEach(s => s.classList.add('miss'));
+          setTimeout(() => slots.forEach(s => s.classList.remove('miss')), 200);
+          highlight();
+        }
+      });
+      input.addEventListener('input', e => { e.target.value = ''; });
+      resetBtn.addEventListener('click', () => { localStorage.removeItem(STORAGE_KEY); loadBest(); });
+      document.getElementById('game').addEventListener('click', () => input.focus());
+      loadBest(); highlight();
+    })();
+  </script>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .game { margin-top: 1.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; cursor: text; }
+    .hud { display: flex; justify-content: space-between; gap: 0.75rem; font-family: var(--mono); font-size: 0.9rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .lbl { color: var(--muted); margin-right: 0.25em; }
+    .track { display: flex; gap: 0.75rem; justify-content: center; margin: 1rem 0 0.75rem; font-family: var(--mono); font-size: 2rem; font-weight: 700; }
+    .slot { display: inline-block; width: 1.6em; height: 1.6em; line-height: 1.6em; text-align: center; border: 2px solid var(--border); border-radius: 6px; color: var(--muted); transition: color 0.15s, border-color 0.15s, background 0.15s; }
+    .slot.active { color: var(--accent); border-color: var(--accent); background: rgba(0,102,204,0.08); }
+    .slot.miss { border-color: #c33; color: #c33; }
+    .counter { text-align: center; margin: 0.25rem 0 1rem; }
+    .dot { display: inline-block; width: 12px; height: 12px; border: 1.5px solid var(--border); border-radius: 50%; margin: 0 4px; transition: background 0.2s, border-color 0.2s; }
+    .dot.done { background: var(--accent); border-color: var(--accent); }
+    .hint { text-align: center; color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 0; }
+    #input { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+    .controls { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    button { font-family: var(--mono); font-size: 0.9rem; padding: 0.4em 1em; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: var(--fg); cursor: pointer; }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    .result { margin-top: 1rem; font-family: var(--mono); font-size: 0.95rem; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

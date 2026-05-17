@@ -1,0 +1,142 @@
+---
+import Base from '../../../layouts/Base.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const trialsDir = path.resolve(__dirname, '../../../../../data/trials');
+
+function parseFm(content: string): Record<string, string> {
+  const m = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return {};
+  const out: Record<string, string> = {};
+  for (const line of m[1].split('\n')) {
+    const kv = line.match(/^(\w[\w-]*):\s*(.+)$/);
+    if (kv) out[kv[1]] = kv[2].trim();
+  }
+  return out;
+}
+
+function deriveType(text: string, fm: Record<string, string>): string {
+  if (fm.type) return fm.type;
+  return 'feature';
+}
+
+function deriveTitle(text: string): string {
+  const h1 = text.match(/^#\s+(.+)$/m);
+  if (h1) return h1[1].replace(/^Round\s+\d+\s*[—–-]\s*/i, '').trim();
+  return 'untitled';
+}
+
+type Trial = { n: number; type: string; title: string; verdict: string };
+
+let trialFiles: string[] = [];
+try { trialFiles = fs.readdirSync(trialsDir).filter(f => /^round-\d+\.md$/.test(f)); } catch {}
+
+const trials: Trial[] = trialFiles.map(f => {
+  const text = fs.readFileSync(path.join(trialsDir, f), 'utf-8');
+  const fm = parseFm(text);
+  const n = parseInt(f.match(/round-(\d+)/)![1], 10);
+  const verdict = (fm.verdict || 'win').replace(/[^a-z]/g, '');
+  return {
+    n,
+    type: deriveType(text, fm),
+    title: deriveTitle(text),
+    verdict: ['win', 'partial', 'spawn'].includes(verdict) ? verdict : 'win',
+  };
+}).sort((a, b) => a.n - b.n);
+
+const typeCounts: Record<string, number> = {};
+for (const r of trials) typeCounts[r.type] = (typeCounts[r.type] ?? 0) + 1;
+const typeCountEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+
+const cleanCount = trials.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length;
+const totalCount = trials.length;
+---
+<Base
+  title="Timeline — loop-lab"
+  description="これまでに走った全 round、data/trials/ から自動同期。"
+  lang="ja"
+>
+  <p class="kicker">実験 / timeline</p>
+  <h1>Timeline</h1>
+
+  <p>
+    これまでに走った全 round（<code>data/trials/round-NNN.md</code> から自動同期）。
+    判定：<em>win</em>（目的 metric が想定通り動いた）、
+    <em>partial</em>（動いたが副作用で別の障害を仕込んだ）、
+    <em>spawn</em>（新 skill が追加された）。
+  </p>
+
+  <ol class="timeline">
+    {trials.map(r => (
+      <li class={`row v-${r.verdict}`}>
+        <span class="n">r{String(r.n).padStart(3, '0')}</span>
+        <span class={`type t-${r.type}`}>{r.type}</span>
+        <span class="title">{r.title}</span>
+        <span class={`v v-${r.verdict}`}>{r.verdict}</span>
+      </li>
+    ))}
+  </ol>
+
+  <h2>種類別集計</h2>
+  <ul class="legend">
+    {typeCountEntries.map(([k, v]) => (
+      <li><span class={`type t-${k}`}>{k}</span> × {v}</li>
+    ))}
+  </ul>
+
+  <h2>勝率</h2>
+  <p class="winrate">
+    {cleanCount} / {totalCount} round が clean で closeした。
+    残りは partial。partial round は同じ change set で別の不具合を
+    仕込んだもので、それぞれが新しい skill の seed になった。
+  </p>
+
+  <p class="footnote">
+    この page は build 時に生成。
+    <a href="https://github.com/ryo-solo/loop-lab/tree/main/data/trials">data/trials/</a>
+    を編集することだけがここを変える方法。
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .timeline { list-style: none; padding: 0; margin: 1.5rem 0; }
+    .timeline li {
+      display: grid;
+      grid-template-columns: 60px 92px 1fr 70px;
+      gap: 0.5rem;
+      padding: 0.4em 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      align-items: baseline;
+    }
+    .timeline li:last-child { border-bottom: none; }
+    .timeline .n { color: var(--muted); }
+    .timeline .type {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      padding: 0.1em 0.4em;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      text-align: center;
+      display: inline-block;
+      width: fit-content;
+    }
+    .timeline .title { color: var(--fg); }
+    .timeline .v { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; text-align: right; }
+    .v-win { color: var(--accent); }
+    .v-partial { color: #c33; }
+    .v-spawn { color: var(--accent); font-weight: 700; }
+    .row.v-partial { background: rgba(204,51,51,0.04); }
+    .row.v-spawn { background: rgba(0,102,204,0.04); }
+    .legend { list-style: none; padding: 0; font-family: var(--mono); font-size: 0.85rem; }
+    .legend li { padding: 0.2em 0; }
+    .winrate { font-size: 0.95rem; }
+    .footnote { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+  </style>
+</Base>

@@ -1,0 +1,82 @@
+---
+import Base from '../../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const prefix = `${base}/ja`;
+---
+<Base
+  title="道具 — loop-lab"
+  description="Lup が作った小さなクライアントサイドツール。アカウント不要、API 呼び出しなし、追跡なし。"
+  lang="ja"
+>
+  <p class="kicker">道具</p>
+  <h1><img src={`${base}/img/icon-tool.svg`} alt="" class="section-icon" /> 道具</h1>
+
+  <p>
+    Lup が作った小さなクライアントサイドツール群。すべてブラウザで完結。
+    アカウント不要、API 呼び出しなし、入力値の解析もしません。
+  </p>
+
+  <ul class="tool-list">
+    <li>
+      <a href={`${prefix}/tools/contrast/`}><strong>コントラストチェッカー</strong></a>
+      <p>2 色の WCAG コントラスト比を計算。AA / AAA の合否を大文字・通常文字で判定。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/regex/`}><strong>正規表現テスター</strong></a>
+      <p>JavaScript 正規表現をサンプル文字列に対してテスト。マッチ箇所をハイライト、キャプチャグループ表示。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/url/`}><strong>URL エンコーダー / デコーダー</strong></a>
+      <p>URL の双方向変換。クエリ文字列を key/value 対に分解。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/json/`}><strong>JSON フォーマッター</strong></a>
+      <p>JSON の検証、整形、最小化。エラーメッセージはリアルタイム。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/base64/`}><strong>Base64 エンコーダー / デコーダー</strong></a>
+      <p>双方向の base64 変換。UTF-8 対応。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/uuid/`}><strong>UUID と Unix timestamp</strong></a>
+      <p>UUID v4 生成、Unix timestamp（秒・ミリ秒・ISO）、相互変換。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/diff/`}><strong>テキスト差分</strong></a>
+      <p>LCS 法による行レベル差分。追加・削除・無変更行を色分け。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/word-count/`}><strong>文字数カウント</strong></a>
+      <p>文字、単語、行、文、段落、読了時間の概算。CJK 対応。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/hash/`}><strong>ハッシュ</strong></a>
+      <p>SHA-1/256/384/512 をブラウザの SubtleCrypto で計算。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/qr/`}><strong>QR コード</strong></a>
+      <p>任意のテキストから QR コードを生成。サイズ・誤り訂正レベル調整可、PNG ダウンロード。</p>
+    </li>
+    <li>
+      <a href={`${prefix}/tools/csv/`}><strong>CSV ↔ JSON</strong></a>
+      <p>CSV と JSON の双方向変換。1 行目をヘッダーとして扱う。</p>
+    </li>
+  </ul>
+
+  <h2>なぜこれら</h2>
+  <p>
+    各ツールはそれ自体が 1 round。Lup は dogfood-tool skill に従い、
+    自分で使う道具だけを作っています。コントラストはページの色設計で、
+    正規表現は Lighthouse JSON の parse で、JSON フォーマッターは
+    KPI snapshot を読むため、というように。
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .section-icon { width: 1em; height: 1em; vertical-align: -0.15em; color: var(--accent); }
+    .tool-list { list-style: none; padding: 0; }
+    .tool-list li { padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .tool-list li:last-child { border-bottom: none; }
+    .tool-list p { margin: 0.3rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  </style>
+</Base>
