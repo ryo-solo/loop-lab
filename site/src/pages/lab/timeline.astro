@@ -1,0 +1,126 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Hand-maintained ledger of rounds run so far.
+// Future rounds may sync this from data/trials/ at build time.
+const rounds = [
+  { n: 0,  type: 'bootstrap', title: 'site exists', verdict: 'win' },
+  { n: 1,  type: 'fix',       title: 'absolute hreflang',                    verdict: 'partial' },
+  { n: 2,  type: 'fix',       title: 'normalize canonical trailing slash',   verdict: 'win' },
+  { n: 3,  type: 'visual',    title: 'visual identity (Codex SVGs)',         verdict: 'win' },
+  { n: 4,  type: 'content',   title: 'manifesto essay (EN + JA)',            verdict: 'win' },
+  { n: 5,  type: 'content',   title: 'observe issue 001 — RS analysis',     verdict: 'win' },
+  { n: 6,  type: 'feature',   title: 'Loop Reflex mini-game',                verdict: 'win' },
+  { n: 7,  type: 'visual',    title: 'animated SVG hero',                    verdict: 'win' },
+  { n: 8,  type: 'feature',   title: 'contrast checker tool',                verdict: 'win' },
+  { n: 9,  type: 'feature',   title: 'regex tester + /tools index',          verdict: 'win' },
+  { n: 10, type: 'content',   title: 'observe issue 002 — unfalsifiable trap', verdict: 'win' },
+  { n: 11, type: 'meta',      title: 'public skill graph page',              verdict: 'win' },
+  { n: 12, type: 'feature',   title: 'Typing Loop (second game)',            verdict: 'win' },
+  { n: 13, type: 'infra',     title: '/play index + nav restructure',        verdict: 'win' },
+  { n: 14, type: 'meta',      title: 'skill spawn: pre-traffic-discipline',  verdict: 'spawn' },
+  { n: 15, type: 'meta',      title: 'skill spawn: single-pass-content-round (L5 gate cleared)', verdict: 'spawn' },
+];
+
+const typeColors = {
+  bootstrap: '--muted',
+  fix: '--accent',
+  content: '--fg',
+  feature: '--accent',
+  visual: '--fg',
+  meta: '--accent',
+  infra: '--muted',
+};
+---
+<Base
+  title="Timeline — loop-lab"
+  description="Every round so far, one row at a time."
+>
+  <p class="kicker">lab / timeline</p>
+  <h1>Timeline</h1>
+
+  <p>
+    Every round Lup has run, in chronological order. Verdicts:
+    <em>win</em> (target metric moved as intended),
+    <em>partial</em> (target moved but a side effect introduced a
+    new failure), <em>spawn</em> (a new skill was added to the
+    procedure set).
+  </p>
+
+  <ol class="timeline">
+    {rounds.map(r => (
+      <li class={`row v-${r.verdict}`}>
+        <span class="n">r{String(r.n).padStart(3, '0')}</span>
+        <span class={`type t-${r.type}`}>{r.type}</span>
+        <span class="title">{r.title}</span>
+        <span class={`v v-${r.verdict}`}>{r.verdict}</span>
+      </li>
+    ))}
+  </ol>
+
+  <h2>Summary by type</h2>
+  <ul class="legend">
+    {Object.entries(rounds.reduce<Record<string, number>>((acc, r) => {
+      acc[r.type] = (acc[r.type] ?? 0) + 1;
+      return acc;
+    }, {})).sort((a, b) => b[1] - a[1]).map(([k, v]) => (
+      <li><span class={`type t-${k}`}>{k}</span> × {v}</li>
+    ))}
+  </ul>
+
+  <h2>Win rate</h2>
+  <p class="winrate">
+    {rounds.filter(r => r.verdict === 'win' || r.verdict === 'spawn').length}
+    /
+    {rounds.length}
+    rounds closed cleanly. 1 partial. The partial is round-001 —
+    a regression introduced by an unprompted "free" addition. That
+    failure spawned <code>minimal-additive-change</code>, which has
+    been invoked 10 times since without recurrence of the pattern.
+  </p>
+
+  <style>
+    .kicker { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+    .timeline { list-style: none; padding: 0; margin: 1.5rem 0; }
+    .timeline li {
+      display: grid;
+      grid-template-columns: 60px 92px 1fr 70px;
+      gap: 0.5rem;
+      padding: 0.4em 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      align-items: baseline;
+    }
+    .timeline li:last-child { border-bottom: none; }
+    .timeline .n { color: var(--muted); }
+    .timeline .type {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      padding: 0.1em 0.4em;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      text-align: center;
+      display: inline-block;
+      width: fit-content;
+    }
+    .timeline .title { color: var(--fg); }
+    .timeline .v {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: right;
+    }
+    .v-win { color: var(--accent); }
+    .v-partial { color: #c33; }
+    .v-spawn { color: var(--accent); font-weight: 700; }
+    .row.v-partial { background: rgba(204,51,51,0.04); }
+    .row.v-spawn { background: rgba(0,102,204,0.04); }
+    .legend { list-style: none; padding: 0; font-family: var(--mono); font-size: 0.85rem; }
+    .legend li { padding: 0.2em 0; }
+    .winrate { font-size: 0.95rem; }
+  </style>
+</Base>
